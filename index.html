@@ -134,7 +134,7 @@
 <body>
 <aside class="side" id="side">
   <div class="brand">Cato Intern Coding Lab</div>
-  <div class="brandsub">Working with ACS Microdata</div>
+  <div class="brandsub">Working with ACS microdata</div>
   <nav id="toc"></nav>
 </aside>
 <div class="main">
@@ -859,7 +859,7 @@ function render(){
         '<div class="rb"><p class="hint-text">'+s.hint+'</p><div class="varline"><span class="lab">Variables:</span>'+chips+'</div></div></details>'+
       '<details class="sol"><summary><span class="tag">Solution</span><span class="arrow">\u203a</span></summary>'+
         '<div class="rb">'+codeBlock(s.sol,'analysis.R')+
-        (s.img||[]).map(im=>'<figure class="fig"><img src="results/'+im+'.png" alt="'+im+'"><figcaption>results/'+im+'.png</figcaption></figure>').join('')+
+        (s.img||[]).map(im=>'<figure class="fig"><img src="Results/'+im+'.png" alt="'+im+'"><figcaption>Results/'+im+'.png</figcaption></figure>').join('')+
         '</div></details>'+
     '</div>';
   } else if(s.sec==='index'){

@@ -44,7 +44,7 @@ ggplot(uninsured, aes(x = as.numeric(year), y = pct)) +
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/health1.png", width = 8, height = 6)
+ggsave("Results/health1.png", width = 8, height = 6)
 
 # Kids on Medicaid/CHIP
 kids <- data %>%
@@ -97,7 +97,7 @@ ggplot(kids, aes(x = as.numeric(year), y = pct, color = state)) +
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/health2.png", width = 8, height = 6)
+ggsave("Results/health2.png", width = 8, height = 6)
 
 #  Medicaid by employment
 data %>%
@@ -138,7 +138,7 @@ ggplot(emp_medicaid, aes(x = reorder(status, pct_medicaid), y = pct_medicaid)) +
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/health3.png", width = 8, height = 6)
+ggsave("Results/health3.png", width = 8, height = 6)
 
 ##  EDUCATION ---------------------------------------------------------------------------------------
 # Income by education
@@ -200,7 +200,7 @@ ggplot(inc, aes(x = label, y = median_income)) +
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/education1.png", width = 8, height = 6)
+ggsave("Results/education1.png", width = 8, height = 6)
 
 # Degrees by sex
 data %>%
@@ -240,7 +240,7 @@ ggplot(degrees, aes(x = sex, y = pct_ba, fill = sex)) +
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/education2.png", width = 8, height = 6)
+ggsave("Results/education2.png", width = 8, height = 6)
 
 # Lawyers with econ degree
 data %>%
@@ -284,7 +284,7 @@ ggplot(lawyer_fields, aes(x = reorder(field, population), y = population, fill =
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/education3.png", width = 8, height = 6)
+ggsave("Results/education3.png", width = 8, height = 6)
 
 ## GENERAL ECONOMICS --------------------------------------------------------------------------------
 # wages over time
@@ -316,7 +316,7 @@ ggplot(wages, aes(x = as.numeric(year), y = median_wage)) +
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/econ1.png", width = 8, height = 6)
+ggsave("Results/econ1.png", width = 8, height = 6)
 
 # employment over time
 emp <- data %>%
@@ -347,7 +347,7 @@ ggplot(emp, aes(x = as.numeric(year), y = pct_employed)) +
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/econ2.png", width = 8, height = 6)
+ggsave("Results/econ2.png", width = 8, height = 6)
 
 # work hours by sex
 hours <- data %>%
@@ -379,7 +379,7 @@ ggplot(hours, aes(x = sex, y = avg_hours, fill = sex)) +
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/econ3.png", width = 8, height = 6)
+ggsave("Results/econ3.png", width = 8, height = 6)
 
 # wages by occupation
 occ_wages <- data %>%
@@ -423,7 +423,7 @@ ggplot(ends, aes(x = reorder(occ_label, median_wage), y = median_wage, fill = gr
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/econ4.png", width = 8, height = 6)
+ggsave("Results/econ4.png", width = 8, height = 6)
 
 # longest work weeks
 occ_hours <- data %>%
@@ -457,7 +457,7 @@ ggplot(occ_hours, aes(x = reorder(occ_label, avg_hours), y = avg_hours)) +
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/econ5.png", width = 8, height = 6)
+ggsave("Results/econ5.png", width = 8, height = 6)
 
 # family income by state
 state_lk <- tibble::tribble(
@@ -498,7 +498,7 @@ ggplot(fam, aes(x = reorder(abb, median_family_income), y = median_family_income
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/econ6.png", width = 8, height = 6)
+ggsave("Results/econ6.png", width = 8, height = 6)
 
 # poverty: 1 vs 2 parent
 fam_kids <- data %>%
@@ -530,7 +530,7 @@ ggplot(fam_kids, aes(x = kids, y = median_family_income)) +
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/econ7.png", width = 8, height = 6)
+ggsave("Results/econ7.png", width = 8, height = 6)
 
 ## IMMIGRATION --------------------------------------------------------------------------------------
 # foreign-born over time
@@ -569,7 +569,7 @@ ggplot(fb, aes(x = as.numeric(year), y = pct)) +
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/immigration1.png", width = 8, height = 6)
+ggsave("Results/immigration1.png", width = 8, height = 6)
 
 # immigrant arrival & income
 data %>%
@@ -605,7 +605,7 @@ ggplot(arrival, aes(x = arrived, y = median_income, fill = arrived)) +
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/immigration2.png", width = 8, height = 6)
+ggsave("Results/immigration2.png", width = 8, height = 6)
 
 # naturalized over time
 nat <- data %>%
@@ -645,7 +645,7 @@ ggplot(nat, aes(x = as.numeric(year), y = pct)) +
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/immigration3.png", width = 8, height = 6)
+ggsave("Results/immigration3.png", width = 8, height = 6)
 
 ## TECHNOLOGY ---------------------------------------------------------------------------------------
 # smartphones by state
@@ -694,7 +694,7 @@ ggplot(phones, aes(x = reorder(abb, pct), y = pct)) +
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/tech1.png", width = 8, height = 6)
+ggsave("Results/tech1.png", width = 8, height = 6)
 
 # smartphones over time
 sp <- data %>%
@@ -744,7 +744,7 @@ ggplot(sp, aes(x = as.numeric(year), y = pct)) +
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/tech2.png", width = 8, height = 6)
+ggsave("Results/tech2.png", width = 8, height = 6)
 
 # smartphones by education
 data %>%
@@ -788,7 +788,7 @@ ggplot(phone_educ, aes(x = label, y = pct)) +
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/tech3.png", width = 8, height = 6)
+ggsave("Results/tech3.png", width = 8, height = 6)
 
 ## ENERGY / ENVIRONMENT -----------------------------------------------------------------------------
 # commute modes
@@ -842,7 +842,7 @@ ggplot(commute, aes(x = reorder(mode, workers), y = workers)) +
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/energy1.png", width = 8, height = 6)
+ggsave("Results/energy1.png", width = 8, height = 6)
 
 # electricity bills by state
 elec <- data %>%
@@ -890,7 +890,7 @@ ggplot(elec, aes(x = reorder(abb, avg_bill), y = avg_bill)) +
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/energy2.png", width = 8, height = 6)
+ggsave("Results/energy2.png", width = 8, height = 6)
 
 # work from home over time
 wfh <- data %>%
@@ -940,7 +940,7 @@ ggplot(wfh, aes(x = as.numeric(year), y = pct_wfh)) +
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/energy3.png", width = 8, height = 6)
+ggsave("Results/energy3.png", width = 8, height = 6)
 
 ## BONUS --------------------------------------------------------------------------------------------
 # earliest to work
@@ -1002,7 +1002,7 @@ ggplot(early, aes(x = reorder(occ_label, -avg_minutes), y = avg_minutes)) +
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/bonus1.png", width = 8, height = 6)
+ggsave("Results/bonus1.png", width = 8, height = 6)
 
 # night-shift states
 night <- data %>%
@@ -1050,7 +1050,7 @@ ggplot(night, aes(x = reorder(abb, pct), y = pct)) +
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/bonus2.png", width = 8, height = 6)
+ggsave("Results/bonus2.png", width = 8, height = 6)
 
 # does WFH pay?
 data %>%
@@ -1100,7 +1100,7 @@ ggplot(wfh_pay, aes(x = work_location, y = median_wage, fill = work_location)) +
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/bonus3.png", width = 8, height = 6)
+ggsave("Results/bonus3.png", width = 8, height = 6)
 
 # overqualified paycheck
 data %>%
@@ -1153,7 +1153,7 @@ ggplot(no_ba_pay, aes(x = reorder(occ_label, median_wage), y = median_wage)) +
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/bonus4.png", width = 8, height = 6)
+ggsave("Results/bonus4.png", width = 8, height = 6)
 
 # hours by marital status
 data %>%
@@ -1203,7 +1203,7 @@ ggplot(
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/bonus5.png", width = 8, height = 6)
+ggsave("Results/bonus5.png", width = 8, height = 6)
 
 # rare & transit commutes
 # rare modes: 20 motorcycle, 39 ferry, 50 bicycle
@@ -1258,7 +1258,7 @@ ggplot(
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/bonus6a.png", width = 8, height = 6)
+ggsave("Results/bonus6a.png", width = 8, height = 6)
 
 transit_occ <- data %>%
   filter(year == 2024, tranwork > 0) %>%
@@ -1302,4 +1302,4 @@ ggplot(
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("results/bonus6b.png", width = 8, height = 6)
+ggsave("Results/bonus6b.png", width = 8, height = 6)
