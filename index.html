@@ -134,7 +134,7 @@
 <body>
 <aside class="side" id="side">
   <div class="brand">Cato Intern Coding Lab</div>
-  <div class="brandsub">ACS &rarr; policy answers</div>
+  <div class="brandsub">American Community Survey Microdata</div>
   <nav id="toc"></nav>
 </aside>
 <div class="main">
@@ -808,6 +808,39 @@ data %>%
   summarise(n = n()) %>%
   arrange(desc(n))`},
 ];
+const QUESTION_IMAGES = [
+  ["Results/health1.png"],
+  ["Results/health2.png"],
+  ["Results/health3.png"],
+  ["Results/education1.png"],
+  ["Results/education2.png"],
+  ["Results/education3.png"],
+  ["Results/econ1.png"],
+  ["Results/econ2.png"],
+  ["Results/econ3.png"],
+  ["Results/econ4.png"],
+  ["Results/econ5.png"],
+  ["Results/econ6.png"],
+  ["Results/econ7.png"],
+  ["Results/immigration1.png"],
+  ["Results/immigration2.png"],
+  ["Results/immigration3.png"],
+  ["Results/tech1.png"],
+  ["Results/tech2.png"],
+  ["Results/tech3.png"],
+  ["Results/energy1.png"],
+  ["Results/energy2.png"],
+  ["Results/energy3.png"],
+  ["Results/bonus1.png"],
+  ["Results/bonus2.png"],
+  ["Results/bonus3.png"],
+  ["Results/bonus4.png"],
+  ["Results/bonus5.png"],
+  ["Results/bonus6a.png", "Results/bonus6b.png"]
+];
+S.filter(s => s.sec === "q").forEach((s, idx) => {
+  s.images = QUESTION_IMAGES[idx];
+});
 function hiR(src){
   const KW=new Set(['TRUE','FALSE','NA','NULL','Inf','NaN','if','else','for','in','function','return']);
   const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -843,11 +876,17 @@ function render(){
     html+='<div class="eyebrow"><span class="box">\u2713</span>'+AREA_NAME[s.area]+'<span class="chip"></span></div>';
     html+='<h1 class="q">'+s.q+'</h1>';
     const chips=(s.vars||[]).map(v=>'<span class="v">'+v+'</span>').join('');
+    const solutionImages=(s.images||[]).map(src=>{
+      const caption=src.split('/').pop().replace(/\.png$/i,'');
+      return '<figure class="fig"><img src="'+src+'" alt="Solution chart for '+s.q.replace(/"/g,'&quot;')+'">'+
+        '<figcaption>'+caption+'</figcaption></figure>';
+    }
+    ).join('');
     html+='<div class="reveals">'+
       '<details class="hint"><summary><span class="tag">Hint</span><span class="arrow">\u203a</span></summary>'+
         '<div class="rb"><p class="hint-text">'+s.hint+'</p><div class="varline"><span class="lab">Variables:</span>'+chips+'</div></div></details>'+
       '<details class="sol"><summary><span class="tag">Solution</span><span class="arrow">\u203a</span></summary>'+
-        '<div class="rb">'+codeBlock(s.sol,'analysis.R')+'</div></details>'+
+        '<div class="rb">'+codeBlock(s.sol,'analysis.R')+solutionImages+'</div></details>'+
     '</div>';
   } else if(s.sec==='index'){
     let qs=S.filter(x=>x.sec==='q');

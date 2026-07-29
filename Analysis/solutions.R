@@ -647,7 +647,7 @@ ggplot(nat, aes(x = as.numeric(year), y = pct)) +
 
 ggsave("results/immigration3.png", width = 8, height = 6)
 
-## TECHNOLOGY ---------------------------------------------------------------------------------
+## TECHNOLOGY ---------------------------------------------------------------------------------------
 # smartphones by state
 phones <- data %>%
   filter(year == 2024, cismrtphn != 0) %>%
@@ -657,6 +657,44 @@ phones <- data %>%
 ggplot(phones, aes(reorder(statefip, pct), pct)) +
   geom_col(fill = "#6D3FA3") + coord_flip() +
   labs(x = NULL, y = "% with a smartphone")
+
+phones <- data %>%
+  filter(year == 2024, cismrtphn != 0) %>%
+  distinct(serial, .keep_all = TRUE) %>%       # one observation per household
+  group_by(statefip) %>%
+  summarise(pct = 100 * weighted.mean(cismrtphn == 1, hhwt),
+            .groups = "drop") %>%              # 1 = yes
+  left_join(state_lk, by = "statefip")
+
+ggplot(phones, aes(x = reorder(abb, pct), y = pct)) +
+  geom_col(fill = "#6D3FA3") +
+  coord_flip() +
+  scale_y_continuous(
+    labels = scales::label_percent(scale = 1),
+    expand = expansion(mult = c(0, 0.04))) +
+  labs(
+    title = "Households with a Smartphone, by State (2024)",
+    subtitle = "Weighted share of households with a smartphone",
+    x = NULL, y = NULL,
+    caption = "Source: ACS PUMS via IPUMS") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold", hjust = 0, color = "black"),
+    plot.subtitle = element_text(size = 11, color = "gray40", hjust = 0,
+                                 margin = margin(b = 12)),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_line(color = "gray90", linewidth = 0.5),
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text = element_text(size = 7, color = "gray40"),
+    plot.caption = element_text(size = 8, color = "gray40", hjust = 0),
+    plot.caption.position = "plot",
+    plot.title.position = "plot",
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA))
+
+ggsave("results/tech1.png", width = 8, height = 6)
 
 # smartphones over time
 sp <- data %>%
@@ -668,13 +706,91 @@ ggplot(sp, aes(year, pct)) +
   geom_line(linewidth = 1, color = "#6D3FA3") + geom_point() +
   labs(x = NULL, y = "% with a smartphone")
 
+sp <- data %>%
+  filter(cismrtphn != 0) %>%
+  distinct(year, serial, .keep_all = TRUE) %>%   # one observation per household per year
+  group_by(year) %>%
+  summarise(pct = 100 * weighted.mean(cismrtphn == 1, hhwt),
+            .groups = "drop")
+
+ggplot(sp, aes(x = as.numeric(year), y = pct)) +
+  geom_line(linewidth = 1.2, color = "#6D3FA3") +
+  geom_point(size = 2, color = "#6D3FA3") +
+  scale_x_continuous(
+    breaks = seq(2016, 2024, by = 2),
+    expand = c(0.02, 0)) +
+  scale_y_continuous(
+    labels = scales::label_percent(scale = 1),
+    expand = c(0.02, 0)) +
+  labs(
+    title = "Smartphone Ownership, 2016-2024",
+    subtitle = "Weighted share of households with a smartphone",
+    x = NULL, y = NULL,
+    caption = "Source: ACS PUMS via IPUMS") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold", hjust = 0, color = "black"),
+    plot.subtitle = element_text(size = 11, color = "gray40", hjust = 0,
+                                 margin = margin(b = 12)),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_line(color = "gray90", linewidth = 0.5),
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text = element_text(size = 10, color = "gray40"),
+    plot.caption = element_text(size = 8, color = "gray40", hjust = 0),
+    plot.caption.position = "plot",
+    plot.title.position = "plot",
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA))
+
+ggsave("results/tech2.png", width = 8, height = 6)
+
 # smartphones by education
 data %>%
   filter(year == 2024, cismrtphn != 0) %>%
   group_by(educ) %>%
   summarise(pct = 100 * mean(cismrtphn == 1))
 
-## ENERGY / ENVIRONMENT ------------------------------------------------------------------------
+phone_educ <- data %>%
+  filter(year == 2024, age >= 25, cismrtphn != 0) %>%
+  group_by(educ) %>%
+  summarise(pct = 100 * weighted.mean(cismrtphn == 1, perwt),
+            .groups = "drop") %>%
+  left_join(educ_lk, by = "educ") %>%
+  mutate(label = factor(label, levels = educ_lk$label))
+
+ggplot(phone_educ, aes(x = label, y = pct)) +
+  geom_col(fill = "#6D3FA3") +
+  scale_y_continuous(
+    labels = scales::label_percent(scale = 1),
+    expand = expansion(mult = c(0, 0.04))) +
+  labs(
+    title = "Smartphone Access by Education (2024)",
+    subtitle = "Share of adults 25+ living in a household with a smartphone, weighted",
+    x = NULL, y = NULL,
+    caption = "Source: ACS PUMS via IPUMS") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold", hjust = 0, color = "black"),
+    plot.subtitle = element_text(size = 11, color = "gray40", hjust = 0,
+                                 margin = margin(b = 12)),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_line(color = "gray90", linewidth = 0.5),
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text.x = element_text(size = 9, color = "gray40", angle = 40, hjust = 1),
+    axis.text.y = element_text(size = 10, color = "gray40"),
+    plot.caption = element_text(size = 8, color = "gray40", hjust = 0),
+    plot.caption.position = "plot",
+    plot.title.position = "plot",
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA))
+
+ggsave("results/tech3.png", width = 8, height = 6)
+
+## ENERGY / ENVIRONMENT -----------------------------------------------------------------------------
 # commute modes
 commute <- data %>%
   filter(year == 2024, tranwork > 0) %>%
@@ -685,15 +801,96 @@ ggplot(commute, aes(reorder(tranwork, n), n)) +
   geom_col(fill = "#0E7C86") + coord_flip() +
   labs(x = "Mode (tranwork code)", y = "Workers (sample)")
 
+commute <- data %>%
+  filter(year == 2024, tranwork > 0) %>%
+  mutate(mode = case_when(
+    tranwork >= 10 & tranwork <= 19 ~ "Car, truck, or van",
+    tranwork == 20                 ~ "Motorcycle",
+    tranwork >= 30 & tranwork <= 39 ~ "Public transportation",
+    tranwork == 40                 ~ "Walked",
+    tranwork == 50                 ~ "Bicycle",
+    tranwork == 80                 ~ "Worked from home",
+    TRUE                           ~ "Other")) %>%
+  group_by(mode) %>%
+  summarise(workers = sum(perwt), .groups = "drop")
+
+ggplot(commute, aes(x = reorder(mode, workers), y = workers)) +
+  geom_col(fill = "#0E7C86") +
+  coord_flip() +
+  scale_y_continuous(
+    labels = scales::label_comma(),
+    expand = expansion(mult = c(0, 0.04))) +
+  labs(
+    title = "How Americans Got to Work in 2024",
+    subtitle = "Estimated number of workers by usual mode of transportation",
+    x = NULL, y = NULL,
+    caption = "Source: ACS PUMS via IPUMS") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold", hjust = 0, color = "black"),
+    plot.subtitle = element_text(size = 11, color = "gray40", hjust = 0,
+                                 margin = margin(b = 12)),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_line(color = "gray90", linewidth = 0.5),
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text = element_text(size = 10, color = "gray40"),
+    plot.caption = element_text(size = 8, color = "gray40", hjust = 0),
+    plot.caption.position = "plot",
+    plot.title.position = "plot",
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA))
+
+ggsave("results/energy1.png", width = 8, height = 6)
+
 # electricity bills by state
 elec <- data %>%
-  filter(year == 2024, costelec > 0, costelec < 9990) %>%  # drop N/A & special codes
+  filter(year == 2024, costelec > 0, costelec < 9990) %>%
   group_by(statefip) %>%
   summarise(avg_bill = mean(costelec))
 
 ggplot(elec, aes(reorder(statefip, avg_bill), avg_bill)) +
   geom_col(fill = "#0E7C86") + coord_flip() +
   labs(x = NULL, y = "Avg annual electricity cost ($)")
+
+elec <- data %>%
+  filter(year == 2024, costelec > 0, costelec < 9990) %>%
+  distinct(serial, .keep_all = TRUE) %>%       # one observation per household
+  group_by(statefip) %>%
+  summarise(avg_bill = weighted.mean(costelec, hhwt),
+            .groups = "drop") %>%
+  left_join(state_lk, by = "statefip")
+
+ggplot(elec, aes(x = reorder(abb, avg_bill), y = avg_bill)) +
+  geom_col(fill = "#0E7C86") +
+  coord_flip() +
+  scale_y_continuous(
+    labels = scales::label_dollar(),
+    expand = expansion(mult = c(0, 0.04))) +
+  labs(
+    title = "Average Annual Electricity Cost by State (2024)",
+    subtitle = "Weighted mean among households that reported paying for electricity",
+    x = NULL, y = NULL,
+    caption = "Source: ACS PUMS via IPUMS") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold", hjust = 0, color = "black"),
+    plot.subtitle = element_text(size = 11, color = "gray40", hjust = 0,
+                                 margin = margin(b = 12)),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_line(color = "gray90", linewidth = 0.5),
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text = element_text(size = 7, color = "gray40"),
+    plot.caption = element_text(size = 8, color = "gray40", hjust = 0),
+    plot.caption.position = "plot",
+    plot.title.position = "plot",
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA))
+
+ggsave("results/energy2.png", width = 8, height = 6)
 
 # work from home over time
 wfh <- data %>%
@@ -705,13 +902,107 @@ ggplot(wfh, aes(year, pct_wfh)) +
   geom_line(linewidth = 1, color = "#0E7C86") + geom_point() +
   labs(x = NULL, y = "% working from home")
 
-## BONUS ---------------------------------------------------------------------------------------
+wfh <- data %>%
+  filter(tranwork > 0) %>%
+  group_by(year) %>%
+  summarise(
+    pct_wfh = 100 * weighted.mean(tranwork == 80, perwt),
+    .groups = "drop")   # 80 = worked at home
+
+ggplot(wfh, aes(x = as.numeric(year), y = pct_wfh)) +
+  geom_line(linewidth = 1.2, color = "#0E7C86") +
+  geom_point(size = 2, color = "#0E7C86") +
+  scale_x_continuous(
+    breaks = seq(2016, 2024, by = 2),
+    expand = c(0.02, 0)) +
+  scale_y_continuous(
+    labels = scales::label_percent(scale = 1),
+    expand = c(0.02, 0), limits = c(0, 20)) +
+  labs(
+    title = "Working from Home, 2016-2024",
+    subtitle = "Weighted share of workers who usually worked from home",
+    x = NULL, y = NULL,
+    caption = "Source: ACS PUMS via IPUMS") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold", hjust = 0, color = "black"),
+    plot.subtitle = element_text(size = 11, color = "gray40", hjust = 0,
+                                 margin = margin(b = 12)),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_line(color = "gray90", linewidth = 0.5),
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text = element_text(size = 10, color = "gray40"),
+    plot.caption = element_text(size = 8, color = "gray40", hjust = 0),
+    plot.caption.position = "plot",
+    plot.title.position = "plot",
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA))
+
+ggsave("results/energy3.png", width = 8, height = 6)
+
+## BONUS --------------------------------------------------------------------------------------------
 # earliest to work
 data %>%
   filter(departs > 0) %>%
   group_by(occ2010) %>%
   summarise(avg_departs = mean(departs)) %>%
-  arrange(avg_departs)     # earliest risers first
+  arrange(avg_departs)
+
+early <- data %>%
+  filter(year == 2024, departs > 0) %>%
+  mutate(
+    depart_minutes = (departs %/% 100) * 60 + departs %% 100) %>%  # HHMM to minutes
+  group_by(occ2010) %>%
+  summarise(
+    avg_minutes = weighted.mean(depart_minutes, perwt),
+    n = n(),
+    .groups = "drop") %>%
+  filter(n >= 100) %>%
+  slice_min(avg_minutes, n = 15, with_ties = FALSE) %>%
+  mutate(
+    occ_label = as.character(occ2010),
+    avg_time = sprintf(
+      "%d:%02d a.m.",
+      floor(avg_minutes / 60),
+      round(avg_minutes %% 60)))
+
+ggplot(early, aes(x = reorder(occ_label, -avg_minutes), y = avg_minutes)) +
+  geom_col(fill = "#C97703") +
+  coord_flip() +
+  geom_text(
+    aes(label = avg_time),
+    hjust = -0.1, size = 3, color = "gray30") +
+  scale_y_continuous(
+    breaks = seq(240, 600, by = 60),
+    labels = function(x) sprintf("%d:00", x / 60),
+    limits = c(0, max(early$avg_minutes) * 1.12),
+    expand = expansion(mult = c(0, 0))) +
+  labs(
+    title = "Occupations That Leave for Work Earliest (2024)",
+    subtitle = "Weighted mean departure time; occupations with 100+ sample workers",
+    x = NULL, y = "Average departure time",
+    caption = "Source: ACS PUMS via IPUMS") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold", hjust = 0, color = "black"),
+    plot.subtitle = element_text(size = 11, color = "gray40", hjust = 0,
+                                 margin = margin(b = 12)),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_line(color = "gray90", linewidth = 0.5),
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text = element_text(size = 8, color = "gray40"),
+    axis.title.x = element_text(size = 10, color = "gray40"),
+    plot.caption = element_text(size = 8, color = "gray40", hjust = 0),
+    plot.caption.position = "plot",
+    plot.title.position = "plot",
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA))
+
+ggsave("results/bonus1.png", width = 8, height = 6)
 
 # night-shift states
 night <- data %>%
@@ -723,11 +1014,93 @@ ggplot(night, aes(reorder(statefip, pct), pct)) +
   geom_col(fill = "#C97703") + coord_flip() +
   labs(x = NULL, y = "% leaving before 5 a.m.")
 
+night <- data %>%
+  filter(year == 2024, departs > 0) %>%
+  group_by(statefip) %>%
+  summarise(
+    pct = 100 * weighted.mean(departs < 500, perwt),
+    .groups = "drop") %>%                       # before 5:00 a.m.
+  left_join(state_lk, by = "statefip")
+
+ggplot(night, aes(x = reorder(abb, pct), y = pct)) +
+  geom_col(fill = "#C97703") +
+  coord_flip() +
+  scale_y_continuous(
+    labels = scales::label_percent(scale = 1),
+    expand = expansion(mult = c(0, 0.04))) +
+  labs(
+    title = "Workers Leaving Home Before 5 a.m., by State (2024)",
+    subtitle = "Weighted share among workers who reported a departure time",
+    x = NULL, y = NULL,
+    caption = "Source: ACS PUMS via IPUMS") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold", hjust = 0, color = "black"),
+    plot.subtitle = element_text(size = 11, color = "gray40", hjust = 0,
+                                 margin = margin(b = 12)),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_line(color = "gray90", linewidth = 0.5),
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text = element_text(size = 7, color = "gray40"),
+    plot.caption = element_text(size = 8, color = "gray40", hjust = 0),
+    plot.caption.position = "plot",
+    plot.title.position = "plot",
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA))
+
+ggsave("results/bonus2.png", width = 8, height = 6)
+
 # does WFH pay?
 data %>%
   filter(incwage > 0, incwage != 999999) %>%
-  group_by(wfh = tranwork == 80) %>%   # TRUE = worked at home
+  group_by(wfh = tranwork == 80) %>%
   summarise(median_wage = median(incwage))
+
+wfh_pay <- data %>%
+  filter(
+    year == 2024,
+    tranwork > 0,
+    incwage > 0,
+    incwage != 999999) %>%
+  group_by(work_location = if_else(
+    tranwork == 80, "Worked from home", "Commuted")) %>%
+  summarise(
+    median_wage = matrixStats::weightedMedian(incwage, perwt),
+    .groups = "drop")
+
+ggplot(wfh_pay, aes(x = work_location, y = median_wage, fill = work_location)) +
+  geom_col(width = 0.65) +
+  scale_fill_manual(
+    values = c("Commuted" = "#0E7C86", "Worked from home" = "#C97703"),
+    guide = "none") +
+  scale_y_continuous(
+    labels = scales::label_dollar(),
+    expand = expansion(mult = c(0, 0.04))) +
+  labs(
+    title = "Wage Income of Remote Workers and Commuters (2024)",
+    subtitle = "Weighted median wage and salary income among workers with positive earnings",
+    x = NULL, y = NULL,
+    caption = "Source: ACS PUMS via IPUMS") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold", hjust = 0, color = "black"),
+    plot.subtitle = element_text(size = 11, color = "gray40", hjust = 0,
+                                 margin = margin(b = 12)),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_line(color = "gray90", linewidth = 0.5),
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text = element_text(size = 10, color = "gray40"),
+    plot.caption = element_text(size = 8, color = "gray40", hjust = 0),
+    plot.caption.position = "plot",
+    plot.title.position = "plot",
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA))
+
+ggsave("results/bonus3.png", width = 8, height = 6)
 
 # overqualified paycheck
 data %>%
@@ -736,11 +1109,101 @@ data %>%
   summarise(median_wage = median(incwage)) %>%
   arrange(desc(median_wage))
 
+no_ba_pay <- data %>%
+  filter(
+    year == 2024,
+    age >= 25,
+    educ < 10,
+    incwage > 0,
+    incwage != 999999) %>%
+  group_by(occ2010) %>%
+  summarise(
+    median_wage = matrixStats::weightedMedian(incwage, perwt),
+    n = n(),
+    .groups = "drop") %>%
+  filter(n >= 100) %>%
+  slice_max(median_wage, n = 15, with_ties = FALSE) %>%
+  mutate(occ_label = as.character(occ2010))
+
+ggplot(no_ba_pay, aes(x = reorder(occ_label, median_wage), y = median_wage)) +
+  geom_col(fill = "#C97703") +
+  coord_flip() +
+  scale_y_continuous(
+    labels = scales::label_dollar(),
+    expand = expansion(mult = c(0, 0.04))) +
+  labs(
+    title = "Highest-Paid Occupations for Workers Without a Bachelor's Degree (2024)",
+    subtitle = "Weighted median wage income; occupations with 100+ sample workers",
+    x = NULL, y = NULL,
+    caption = "Source: ACS PUMS via IPUMS") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold", hjust = 0, color = "black"),
+    plot.subtitle = element_text(size = 11, color = "gray40", hjust = 0,
+                                 margin = margin(b = 12)),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_line(color = "gray90", linewidth = 0.5),
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text = element_text(size = 8, color = "gray40"),
+    plot.caption = element_text(size = 8, color = "gray40", hjust = 0),
+    plot.caption.position = "plot",
+    plot.title.position = "plot",
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA))
+
+ggsave("results/bonus4.png", width = 8, height = 6)
+
 # hours by marital status
 data %>%
   filter(uhrswork > 0) %>%
-  group_by(marst) %>%       # marital status
+  group_by(marst) %>%
   summarise(avg_hours = mean(uhrswork))
+
+marital_hours <- data %>%
+  filter(year == 2024, uhrswork > 0) %>%
+  mutate(marital_status = case_when(
+    marst %in% c(1, 2) ~ "Married",
+    marst %in% c(3, 4) ~ "Separated or divorced",
+    marst == 5         ~ "Widowed",
+    marst == 6         ~ "Never married",
+    TRUE               ~ "Other")) %>%
+  group_by(marital_status) %>%
+  summarise(
+    avg_hours = weighted.mean(uhrswork, perwt),
+    .groups = "drop")
+
+ggplot(
+  marital_hours,
+  aes(x = reorder(marital_status, avg_hours), y = avg_hours)) +
+  geom_col(fill = "#C97703") +
+  coord_flip() +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.04))) +
+  labs(
+    title = "Average Weekly Hours Worked by Marital Status (2024)",
+    subtitle = "Weighted mean usual hours per week among workers",
+    x = NULL, y = "Hours per week",
+    caption = "Source: ACS PUMS via IPUMS") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold", hjust = 0, color = "black"),
+    plot.subtitle = element_text(size = 11, color = "gray40", hjust = 0,
+                                 margin = margin(b = 12)),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_line(color = "gray90", linewidth = 0.5),
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text = element_text(size = 10, color = "gray40"),
+    axis.title.x = element_text(size = 10, color = "gray40"),
+    plot.caption = element_text(size = 8, color = "gray40", hjust = 0),
+    plot.caption.position = "plot",
+    plot.title.position = "plot",
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA))
+
+ggsave("results/bonus5.png", width = 8, height = 6)
 
 # rare & transit commutes
 # rare modes: 20 motorcycle, 39 ferry, 50 bicycle
@@ -748,9 +1211,95 @@ data %>%
   filter(tranwork %in% c(20, 39, 50)) %>%
   group_by(tranwork) %>%
   summarise(n = n())
+
 # occupations that use public transit most (bus/rail codes 31-37)
 data %>%
   filter(tranwork %in% c(31, 32, 33, 34, 35, 36, 37)) %>%
   group_by(occ2010) %>%
   summarise(n = n()) %>%
   arrange(desc(n))
+
+rare_commutes <- data %>%
+  filter(year == 2024, tranwork %in% c(20, 39, 50)) %>%
+  mutate(mode = recode(
+    tranwork,
+    `20` = "Motorcycle",
+    `39` = "Ferry",
+    `50` = "Bicycle")) %>%
+  group_by(mode) %>%
+  summarise(commuters = sum(perwt), .groups = "drop")
+
+ggplot(
+  rare_commutes,
+  aes(x = reorder(mode, commuters), y = commuters)) +
+  geom_col(fill = "#C97703") +
+  scale_y_continuous(
+    labels = scales::label_comma(),
+    expand = expansion(mult = c(0, 0.04))) +
+  labs(
+    title = "Motorcycle, Ferry, and Bicycle Commuters (2024)",
+    subtitle = "Weighted estimate of workers by commute mode",
+    x = NULL, y = NULL,
+    caption = "Source: ACS PUMS via IPUMS") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold", hjust = 0, color = "black"),
+    plot.subtitle = element_text(size = 11, color = "gray40", hjust = 0,
+                                 margin = margin(b = 12)),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_line(color = "gray90", linewidth = 0.5),
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text = element_text(size = 10, color = "gray40"),
+    plot.caption = element_text(size = 8, color = "gray40", hjust = 0),
+    plot.caption.position = "plot",
+    plot.title.position = "plot",
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA))
+
+ggsave("results/bonus6a.png", width = 8, height = 6)
+
+transit_occ <- data %>%
+  filter(year == 2024, tranwork > 0) %>%
+  group_by(occ2010) %>%
+  summarise(
+    pct_transit = 100 * weighted.mean(
+      tranwork %in% c(31, 32, 33, 34, 35, 36, 37), perwt),
+    n = n(),
+    .groups = "drop") %>%
+  filter(n >= 100) %>%
+  slice_max(pct_transit, n = 15, with_ties = FALSE) %>%
+  mutate(occ_label = as.character(occ2010))
+
+ggplot(
+  transit_occ,
+  aes(x = reorder(occ_label, pct_transit), y = pct_transit)) +
+  geom_col(fill = "#0E7C86") +
+  coord_flip() +
+  scale_y_continuous(
+    labels = scales::label_percent(scale = 1),
+    expand = expansion(mult = c(0, 0.04))) +
+  labs(
+    title = "Occupations with the Highest Public-Transit Use (2024)",
+    subtitle = "Weighted share commuting by bus or rail; occupations with 100+ sample workers",
+    x = NULL, y = NULL,
+    caption = "Source: ACS PUMS via IPUMS") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold", hjust = 0, color = "black"),
+    plot.subtitle = element_text(size = 11, color = "gray40", hjust = 0,
+                                 margin = margin(b = 12)),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_line(color = "gray90", linewidth = 0.5),
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text = element_text(size = 8, color = "gray40"),
+    plot.caption = element_text(size = 8, color = "gray40", hjust = 0),
+    plot.caption.position = "plot",
+    plot.title.position = "plot",
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA))
+
+ggsave("results/bonus6b.png", width = 8, height = 6)

@@ -14,7 +14,7 @@ acs = acs %>%
 
 acs = acs %>%
   select(
-    year, serial, statefip, gq, sex, age, perwt,
+    year, serial, statefip, gq, sex, age, perwt, hhwt,
     costelec, cismrtphn, pernum, marst, bpl, citizen, yrimmig,
     hcovany, hinscaid, educ, empstat, occ2010, uhrswork, 
     inctot, ftotinc, incwage, tranwork, departs, arrives,
