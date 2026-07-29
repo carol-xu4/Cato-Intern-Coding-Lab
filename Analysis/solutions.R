@@ -358,7 +358,7 @@ hours <- data %>%
 
 ggplot(hours, aes(x = sex, y = avg_hours, fill = sex)) +
   geom_col(width = 0.65) +
-  scale_fill_manual(values = c("Men" = "skyblue", "Women" = "pink"), guide = "none") +
+  scale_fill_manual(values = c("Men" = "#1B7A4B", "Women" = "pink"), guide = "none") +
   scale_y_continuous(expand = expansion(mult = c(0, 0.04))) +
   labs(
     title = "Average Weekly Hours Worked, by Sex (2024)",
@@ -400,7 +400,7 @@ ends <- bind_rows(
 ggplot(ends, aes(x = reorder(occ_label, median_wage), y = median_wage, fill = grp)) +
   geom_col() +
   coord_flip() +
-  scale_fill_manual(values = c("Highest-paid" = "#5c5ce2", "Lowest-paid" = "#ec36a7"),
+  scale_fill_manual(values = c("Highest-paid" = "#1B7A4B", "Lowest-paid" = "#ec36a7"),
                     guide = "none") +
   facet_wrap(~ grp, scales = "free_y", ncol = 1) +
   scale_y_continuous(labels = scales::label_dollar(), expand = expansion(mult = c(0, 0.04))) +
@@ -436,7 +436,7 @@ occ_hours <- data %>%
   slice_max(avg_hours, n = 15)
 
 ggplot(occ_hours, aes(x = reorder(occ_label, avg_hours), y = avg_hours)) +
-  geom_col(fill = "#e051c1") +
+  geom_col(fill = "#1B7A4B") +
   scale_y_continuous(expand = expansion(mult = c(0, 0.04))) +
   labs(
     title = "Occupations with the Longest Work Weeks (2024)",

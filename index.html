@@ -210,11 +210,15 @@ const S = [
      "<b>read_csv()</b> \u2014 reads your data file into an object you can work with."]},
    {code:`# Set working directory
 setwd("C:/Users/CarolXu/OneDrive - Cato Institute/Desktop/Intern Coding Lab")
+
 # confirm where you are
 getwd()
+
 # Packages
 install.packages("tidyverse")
+
 library(tidyverse)
+
 # load the data
 data <- read_csv("data/acs00015.csv")`},
    {h:`<div class="note"><b>Before you start:</b> make sure the data file <span class="tok">acs00015.csv</span>
@@ -223,6 +227,7 @@ data <- read_csv("data/acs00015.csv")`},
      <p class="lede">Typing library() over and over gets tedious. The pacman package loads a whole
      set in one line (and installs any that are missing):</p>`},
    {code:`if (!require("pacman")) install.packages("pacman")
+
 pacman::p_load(tidyverse, ggthemes, readxl, data.table, gdata, ipumsr, matrixStats)`},
    {h:`<div class="h3">What did &lt;- and data just do?</div>
      <p class="lede"><b>&lt;- is assignment.</b> It means &ldquo;save the thing on the right into the name on the
@@ -236,20 +241,26 @@ pacman::p_load(tidyverse, ggthemes, readxl, data.table, gdata, ipumsr, matrixSta
    {h:`<p class="lede">Never trust a file you haven't looked at.</p>`},
    {code:`# number of rows
 nrow(data)
+
 # rows x columns (people x variables)
 dim(data)
+
 # what variables are here?
 names(data)
+
 # view the first few rows
 head(data)`},
    {h:`<div class="h3">Zooming in</div>
      <p class="lede">Pull a single column, or make a quick tally of a category.</p>`},
    {code:`# Every person's age, as a list of numbers
 data$age
+
 # how many rows of each category
 count(data, sex)
+
 # how many on Medicaid
 count(data, hinscaid)
+
 # how many rows per state
 count(data, statefip)`},
    {h:`<div class="h3">table() vs count()</div>
@@ -258,6 +269,7 @@ count(data, statefip)`},
      count column named <span class="tok">n</span>.</p>`},
    {code:`# base R: a cross-tab grid (years down the side, marital status across the top)
 table(data$year, data$marst)
+
 # tidyverse: a tidy data frame with one row per combination and a count column 'n'
 count(data, year, marst)`},
    {h:`<p class="lede">Reach for <span class="tok">table()</span> for a quick cross-tab to eyeball in the console;
@@ -267,14 +279,17 @@ count(data, year, marst)`},
      <span class="tok">median()</span>, <span class="tok">min()</span>, and <span class="tok">max()</span> each return
      one number. <span class="tok">summary()</span> gives several at once \u2014 the min, quartiles, mean, and max:</p>`},
    {code:`summary(data$inctot)   # min, 1st quartile, median, mean, 3rd quartile, max
+
 mean(data$age)         # average age
+
 median(data$inctot)    # the middle income`},
    {h:`<div class="h3">Saving a table</div>
      <p class="lede">Once you've made a summary table, <span class="tok">write_csv()</span> saves it to a file \u2014
      the mirror image of <span class="tok">read_csv()</span>:</p>`},
-   {code:`# make a table, then save it to your results folder
+   {code:`# make a table, then save it to your Results folder
 state_counts <- count(data, statefip)
-write_csv(state_counts, "results/state_counts.csv")`}]},
+
+write_csv(state_counts, "Results/state_counts.csv")`}]},
 {sec:"intro", area:"intro", tag:"Core functions", kick:"Intro", q:"The three core functions, in detail",
  blocks:[
    {h:`<p class="lede">Each function does one job. When working with data, we save results as new objects with
@@ -284,6 +299,7 @@ write_csv(state_counts, "results/state_counts.csv")`}]},
      &ldquo;and then.&rdquo; These two lines are identical, i.e. &ldquo;take data, and then count by sex.&rdquo;
      Pipes let you chain steps in the order you'd read them.</p>`},
    {code:`count(data, sex)        # count 'sex' in 'data'
+
 data %>% count(sex)     # take 'data' AND THEN count by 'sex'`},
    {h:`<div class="h3">filter() \u2014 pick rows</div>
      <p class="lede">Keeps rows that pass a test. Commas mean <i>and</i>.
@@ -291,9 +307,13 @@ data %>% count(sex)     # take 'data' AND THEN count by 'sex'`},
      <span class="tok">&lt;</span> less than, <span class="tok">%in%</span> is one of.</p>`},
    {code:`# save each filtered result as its own object
 adults      <- data %>% filter(age >= 18)
+
 workers_24  <- data %>% filter(year == 2024, empstat == 1)   # employed in 2024
+
 immigrants  <- data %>% filter(bpl >= 100)                   # born abroad
+
 young_grads <- data %>% filter(age >= 25, age <= 34, educ >= 10)
+
 # %in% keeps rows matching ANY value in a set -- here, all public-transit commuters
 transit <- data %>% filter(tranwork %in% c(31, 32, 33, 34, 35, 36, 37))`},
    {h:`<div class="h3">group_by() + summarise() \u2014 one number per group</div>
@@ -305,6 +325,7 @@ income_by_educ <- data %>%
   filter(inctot != 9999999) %>%      # drop the "N/A" income code
   group_by(educ) %>%
   summarise(median_income = median(inctot))
+
 income_by_educ        # print the result to look at it`},
    {h:`<p class="lede">Inside <span class="tok">summarise()</span> you can use any function that turns many
      numbers into one: <span class="tok">n()</span> counts rows, and
@@ -318,6 +339,7 @@ income_by_educ        # print the result to look at it`},
 uninsured_by_state <- adults %>%
   group_by(statefip) %>%
   summarise(pct = 100 * mean(hcovany == 1))   # hcovany 1 = no coverage
+
 # to rank the result, add arrange() to sort high-to-low
 uninsured_by_state %>% arrange(desc(pct))`},
    {h:`<div class="h3">Seeing every row</div>
@@ -330,11 +352,13 @@ uninsured_by_state %>% arrange(desc(pct))`},
 data %>%
   filter(year == 2024, age >= 18, hinscaid == 2) %>%   # hinscaid 2 = Medicaid/CHIP
   summarise(n = n())
+
 # For every year: group_by(year) first, then count within each
 medicaid_by_year <- data %>%
   filter(age >= 18, hinscaid == 2) %>%
   group_by(year) %>%
   summarise(n = n())
+
 print(medicaid_by_year, n = Inf)`}]},
 {sec:"intro", area:"intro", tag:"Weights (optional)", kick:"Intro", q:"Optional: working with the weights",
  blocks:[
@@ -393,9 +417,11 @@ medicaid_by_year <- data %>%
   filter(age >= 18, hinscaid == 2) %>%
   group_by(year) %>%
   summarise(n = n())
+
 # lines -- a trend over time
 ggplot(medicaid_by_year, aes(x = year, y = n)) +
   geom_line() + geom_point()
+
 # bars -- the same numbers as columns
 ggplot(medicaid_by_year, aes(x = factor(year), y = n)) +
   geom_col()`},
@@ -408,6 +434,7 @@ medicaid_wt <- data %>%
   filter(age >= 18, hinscaid == 2) %>%
   group_by(year) %>%
   summarise(population = sum(perwt))
+
 ggplot(medicaid_wt, aes(x = as.numeric(year), y = population)) +
   geom_line(linewidth = 1.2, color = "#3043B4") +
   geom_point(size = 2, color = "#3043B4") +
@@ -433,7 +460,8 @@ ggplot(medicaid_wt, aes(x = as.numeric(year), y = population)) +
     plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-ggsave("results/medicaid_adults.png", width = 8, height = 5)`},
+
+ggsave("Results/medicaid_adults.png", width = 8, height = 5)`},
    {h:`<div class="h3">Splitting adults vs. kids</div>
      <p class="lede">Add a group column, map it to <span class="tok">color</span>, and set the two colours by
      hand \u2014 adults blue, kids orange:</p>`},
@@ -442,6 +470,7 @@ medicaid_grp <- data %>%
   filter(hinscaid == 2) %>%
   group_by(year, group = if_else(age < 19, "Kids", "Adults")) %>%
   summarise(n = n(), .groups = "drop")
+
 ggplot(medicaid_grp, aes(x = as.numeric(year), y = n, color = group)) +
   geom_line(linewidth = 1.2) +
   geom_point(size = 2) +
@@ -474,7 +503,8 @@ ggplot(medicaid_grp, aes(x = as.numeric(year), y = n, color = group)) +
     plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-ggsave("results/medicaid_adults_vs_kids.png", width = 8, height = 5)`},
+
+ggsave("Results/medicaid_adults_vs_kids.png", width = 8, height = 5)`},
    {h:`<div class="h3">The many things you can add</div>
      <div class="note">Heads up: this example runs on a <b>different data pull</b> (a <span class="tok">medicaid2</span>
      table from a separate immigration project) \u2014 it's here to show the styling options, not to run on today's data.</div>
@@ -519,11 +549,11 @@ ggsave("results/medicaid_adults_vs_kids.png", width = 8, height = 5)`},
     plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))`},
-   {h:`<figure class="fig"><img src="Results/ACS_medicaid2.png" alt="Medicaid rate: native-born vs immigrants, 2010-2024"><figcaption>The result \u2014 Results/ACS_medicaid2.png</figcaption></figure>`}]},
+   {h:`<figure class="fig"><img src="Results/ACS_medicaid2.png" alt="Medicaid rate: native-born vs immigrants, 2010-2024"><figcaption>Results/ACS_medicaid2.png</figcaption></figure>`}]},
 {sec:"book", area:"book", tag:"Demographics", kick:"Codebook", q:"Codebook — who each person is",
  blocks:[{h:`<div class="var"><div class="vh"><span class="vn">year</span><span class="vd">Census/survey year</span></div><p class="vdef">Survey year. This extract has one ACS sample per year, 2016 through 2024.</p></div><div class="var"><div class="vh"><span class="vn">statefip</span><span class="vd">State (FIPS code)</span></div><table class="codes"><tr><td class="c">06</td><td>California</td></tr><tr><td class="c">36</td><td>New York</td></tr><tr><td class="c">48</td><td>Texas</td></tr></table><p class="vdef">Full state list is in the IPUMS codebook; TX=48, CA=6, NY=36 are the ones used in the questions.</p></div><div class="var"><div class="vh"><span class="vn">sex</span><span class="vd">Sex</span></div><table class="codes"><tr><td class="c">1</td><td>Male</td></tr><tr><td class="c">2</td><td>Female</td></tr></table></div><div class="var"><div class="vh"><span class="vn">age</span><span class="vd">Age</span></div><p class="vdef">Age in years. 000 = under 1; 999 = missing.</p></div><div class="var"><div class="vh"><span class="vn">marst</span><span class="vd">Marital status</span></div><table class="codes"><tr><td class="c">1</td><td>Married, spouse present</td></tr><tr><td class="c">2</td><td>Married, spouse absent</td></tr><tr><td class="c">3</td><td>Separated</td></tr><tr><td class="c">4</td><td>Divorced</td></tr><tr><td class="c">5</td><td>Widowed</td></tr><tr><td class="c">6</td><td>Never married/single</td></tr></table></div><div class="var"><div class="vh"><span class="vn">bpl</span><span class="vd">Birthplace</span></div><p class="vdef">Codes below 100 are U.S. states/territories; 100 and up are foreign countries. So bpl &gt;= 100 means foreign-born.</p></div><div class="var"><div class="vh"><span class="vn">citizen</span><span class="vd">Citizenship status</span></div><table class="codes"><tr><td class="c">0</td><td>N/A (born in the U.S.)</td></tr><tr><td class="c">1</td><td>Born abroad of American parents</td></tr><tr><td class="c">2</td><td>Naturalized citizen</td></tr><tr><td class="c">3</td><td>Not a citizen</td></tr></table></div><div class="var"><div class="vh"><span class="vn">yrimmig</span><span class="vd">Year of immigration</span></div><p class="vdef">Four-digit year the person came to the U.S. 0 = N/A (U.S. born).</p></div><div class="var"><div class="vh"><span class="vn">educ</span><span class="vd">Educational attainment</span></div><table class="codes"><tr><td class="c">06</td><td>Grade 12 (high school)</td></tr><tr><td class="c">07</td><td>1 year of college</td></tr><tr><td class="c">10</td><td>4 years of college (bachelor's)</td></tr><tr><td class="c">11</td><td>5+ years of college</td></tr></table><p class="vdef">Roughly, educ &gt;= 10 means a bachelor's degree or higher.</p></div>`}]},
 {sec:"book", area:"book", tag:"Work & money", kick:"Codebook", q:"Codebook — work &amp; money",
- blocks:[{h:`<div class="var"><div class="vh"><span class="vn">empstat</span><span class="vd">Employment status</span></div><table class="codes"><tr><td class="c">0</td><td>N/A</td></tr><tr><td class="c">1</td><td>Employed</td></tr><tr><td class="c">2</td><td>Unemployed</td></tr><tr><td class="c">3</td><td>Not in labor force</td></tr></table></div><div class="var"><div class="vh"><span class="vn">occ2010</span><span class="vd">Occupation (2010 basis)</span></div><p class="vdef">Hundreds of occupation codes; e.g. 2100 = lawyers/judges, 4040 = bartenders, 7800 = bakers. See the full IPUMS OCC2010 list.</p></div><div class="var"><div class="vh"><span class="vn">uhrswork</span><span class="vd">Usual hours worked per week</span></div><p class="vdef">0 = N/A; 99 is a topcode (99+).</p></div><div class="var"><div class="vh"><span class="vn">inctot</span><span class="vd">Total personal income</span></div><p class="vdef">Dollars. Can be negative. 9999999 = N/A.</p></div><div class="var"><div class="vh"><span class="vn">ftotinc</span><span class="vd">Total family income</span></div><p class="vdef">Dollars. 9999999 = N/A.</p></div><div class="var"><div class="vh"><span class="vn">incwage</span><span class="vd">Wage and salary income</span></div><p class="vdef">Dollars. 999999 = N/A.</p></div><div class="var"><div class="vh"><span class="vn">poverty</span><span class="vd">Poverty status</span></div><p class="vdef">Family income as a % of the poverty line: 100 = at the line. 0 = N/A; capped at 501.</p></div><div class="var"><div class="vh"><span class="vn">tranwork</span><span class="vd">Means of transportation to work</span></div><table class="codes"><tr><td class="c">10</td><td>Auto, truck, or van</td></tr><tr><td class="c">20</td><td>Motorcycle</td></tr><tr><td class="c">31-37</td><td>Bus / rail / public transit</td></tr><tr><td class="c">39</td><td>Ferryboat</td></tr><tr><td class="c">50</td><td>Bicycle</td></tr><tr><td class="c">60</td><td>Walked only</td></tr><tr><td class="c">80</td><td>Worked at home</td></tr></table></div><div class="var"><div class="vh"><span class="vn">departs</span><span class="vd">Time of departure for work</span></div><p class="vdef">24-hour clock (0730 = 7:30 a.m.). 0 = N/A.</p></div></div>`}]},
+ blocks:[{h:`<div class="var"><div class="vh"><span class="vn">empstat</span><span class="vd">Employment status</span></div><table class="codes"><tr><td class="c">0</td><td>N/A</td></tr><tr><td class="c">1</td><td>Employed</td></tr><tr><td class="c">2</td><td>Unemployed</td></tr><tr><td class="c">3</td><td>Not in labor force</td></tr></table></div><div class="var"><div class="vh"><span class="vn">occ2010</span><span class="vd">Occupation (2010 basis)</span></div><p class="vdef">Hundreds of occupation codes; e.g. 2100 = lawyers/judges, 4040 = bartenders, 7800 = bakers. See the full IPUMS OCC2010 list.</p></div><div class="var"><div class="vh"><span class="vn">uhrswork</span><span class="vd">Usual hours worked per week</span></div><p class="vdef">0 = N/A; 99 is a topcode (99+).</p></div><div class="var"><div class="vh"><span class="vn">inctot</span><span class="vd">Total personal income</span></div><p class="vdef">Dollars. Can be negative. 9999999 = N/A.</p></div><div class="var"><div class="vh"><span class="vn">inctot2024</span><span class="vd">Total personal income (2024 dollars)</span></div><p class="vdef">inctot adjusted for inflation to 2024 dollars. This is not a native ACS variable \u2014 we created it while cleaning the original data, so incomes can be compared fairly across survey years. Use it in place of inctot whenever a question spans multiple years.</p></div><div class="var"><div class="vh"><span class="vn">ftotinc</span><span class="vd">Total family income</span></div><p class="vdef">Dollars. 9999999 = N/A.</p></div><div class="var"><div class="vh"><span class="vn">ftotinc2024</span><span class="vd">Total family income (2024 dollars)</span></div><p class="vdef">ftotinc adjusted for inflation to 2024 dollars. Like inctot2024, this is not a native ACS variable \u2014 we created it while cleaning the original data so family incomes can be compared across survey years. Use it in place of ftotinc for any cross-year comparison.</p></div><div class="var"><div class="vh"><span class="vn">incwage</span><span class="vd">Wage and salary income</span></div><p class="vdef">Dollars. 999999 = N/A.</p></div><div class="var"><div class="vh"><span class="vn">poverty</span><span class="vd">Poverty status</span></div><p class="vdef">Family income as a % of the poverty line: 100 = at the line. 0 = N/A; capped at 501.</p></div><div class="var"><div class="vh"><span class="vn">tranwork</span><span class="vd">Means of transportation to work</span></div><table class="codes"><tr><td class="c">10</td><td>Auto, truck, or van</td></tr><tr><td class="c">20</td><td>Motorcycle</td></tr><tr><td class="c">31-37</td><td>Bus / rail / public transit</td></tr><tr><td class="c">39</td><td>Ferryboat</td></tr><tr><td class="c">50</td><td>Bicycle</td></tr><tr><td class="c">60</td><td>Walked only</td></tr><tr><td class="c">80</td><td>Worked at home</td></tr></table></div><div class="var"><div class="vh"><span class="vn">departs</span><span class="vd">Time of departure for work</span></div><p class="vdef">24-hour clock (0730 = 7:30 a.m.). 0 = N/A.</p></div></div>`}]},
 {sec:"book", area:"book", tag:"Home & health", kick:"Codebook", q:"Codebook — home &amp; health",
  blocks:[{h:`<div class="var"><div class="vh"><span class="vn">hcovany</span><span class="vd">Any health insurance coverage</span></div><table class="codes"><tr><td class="c">1</td><td>No health insurance coverage</td></tr><tr><td class="c">2</td><td>With health insurance coverage</td></tr></table></div><div class="var"><div class="vh"><span class="vn">hinscaid</span><span class="vd">Health insurance through Medicaid</span></div><table class="codes"><tr><td class="c">1</td><td>No insurance through Medicaid</td></tr><tr><td class="c">2</td><td>Has insurance through Medicaid</td></tr></table></div><div class="var"><div class="vh"><span class="vn">cismrtphn</span><span class="vd">Smartphone in household</span></div><table class="codes"><tr><td class="c">0</td><td>N/A (GQ)</td></tr><tr><td class="c">1</td><td>Yes</td></tr><tr><td class="c">2</td><td>No</td></tr></table></div><div class="var"><div class="vh"><span class="vn">costelec</span><span class="vd">Annual electricity cost</span></div><p class="vdef">Dollars. Special codes near 9990+ mark included-in-rent / no charge / N/A \u2014 drop before averaging.</p></div>`}]},
 {sec:"index", area:"intro", tag:"All questions"},
@@ -535,6 +565,7 @@ ggsave("results/medicaid_adults_vs_kids.png", width = 8, height = 5)`},
   filter(age >= 18) %>%
   group_by(year) %>%
   summarise(pct = 100 * mean(hcovany == 1))   # hcovany 1 = no coverage
+
 ggplot(uninsured, aes(year, pct)) +
   geom_line(linewidth = 1, color = "#3043B4") + geom_point() +
   labs(x = NULL, y = "% uninsured")`},
@@ -546,12 +577,13 @@ ggplot(uninsured, aes(year, pct)) +
   filter(age < 19, statefip %in% c(48, 6, 36)) %>%   # 48 TX, 6 CA, 36 NY
   group_by(year, statefip) %>%
   summarise(pct = 100 * mean(hinscaid == 2), .groups = "drop")   # 2 = Medicaid/CHIP
+
 ggplot(kids, aes(year, pct, color = factor(statefip))) +
   geom_line(linewidth = 1) + geom_point() +
   labs(x = NULL, y = "% of children on Medicaid", color = "State")`},
 {sec:"q", area:"health", tag:"Medicaid by employment",
  q:"In 2024, was Medicaid coverage higher for unemployed than employed adults?",
- hint:"Filter to 2024 and working-age adults, group by employment status, take the share on Medicaid in each.",
+ hint:"Filter to 2024 and working-age adults, group by employment status, then take the share on Medicaid in each.",
  vars:["year","age","empstat","hinscaid"],
  sol:`data %>%
   filter(year == 2024, age >= 18, age <= 64) %>%
@@ -559,15 +591,16 @@ ggplot(kids, aes(year, pct, color = factor(statefip))) +
   summarise(pct_medicaid = 100 * mean(hinscaid == 2))`},
 {sec:"q", area:"education", tag:"Income by education",
  q:"From 2016 to 2024, did median personal income rise with education?",
- hint:"Drop the N/A income code, then take a median within each education level.",
- vars:["inctot","educ"],
+ hint:"Drop the N/A income code, then take a median of inctot2024 (inflation-adjusted) within each education level.",
+ vars:["inctot2024","educ"],
  sol:`inc <- data %>%
   filter(inctot != 9999999) %>%   # 9999999 = N/A
   group_by(educ) %>%
-  summarise(median_income = median(inctot))
+  summarise(median_income = median(inctot2024))   # 2024 dollars, comparable across years
+
 ggplot(inc, aes(factor(educ), median_income)) +
   geom_col(fill = "#0D0E51") +
-  labs(x = "Education level (educ code)", y = "Median personal income")`},
+  labs(x = "Education level (educ code)", y = "Median personal income (2024 $)")`},
 {sec:"q", area:"education", tag:"Degrees by sex",
  q:"In 2024, did women or men aged 25+ hold college degrees at a higher rate?",
  hint:"\u201cBachelor\u2019s or higher\u201d is roughly educ \u2265 10. Filter to 2024 and adults 25+, then average that test by sex.",
@@ -578,14 +611,11 @@ ggplot(inc, aes(factor(educ), median_income)) +
   summarise(pct_ba = 100 * mean(educ >= 10))   # educ >= 10 ~ bachelor's+`},
 {sec:"q", area:"education", tag:"Lawyers with econ degree",
  q:"Among adults 25\u201334, how many lawyers have an economics degree?",
- hint:"Lawyers are occ2010 == 2100. NOTE: identifying an economics degree needs DEGFIELD, which is not in the current extract \u2014 add it to the pull.",
- vars:["age","occ2010","degfield"],
- sol:`# NOTE: "economics degree" needs DEGFIELD, not in the current extract.
-data %>%
-  filter(age >= 25, age <= 34, occ2010 == 2100) %>%   # 2100 = lawyers, judges
-  summarise(n = n())
-# once DEGFIELD is added to the pull, filter it too:
-# filter(degfield == 54)   # 54 = economics`},
+ hint:"Lawyers are occ2010 == 2100 and an economics degree is degfieldd == 5501. Filter to adults 25\u201334 who are both, then count them.",
+ vars:["age","occ2010","degfieldd"],
+ sol:`data %>%
+  filter(age >= 25, age <= 34, occ2010 == 2100, degfieldd == 5501) %>%   # 2100 = lawyers/judges, 5501 = economics
+  summarise(n = n())`},
 {sec:"q", area:"econ", tag:"Wages over time",
  q:"From 2016 to 2024, how did median wage income change year by year?",
  hint:"Keep people with real wage earnings, then group by year and take the median wage.",
@@ -594,23 +624,25 @@ data %>%
   filter(incwage > 0, incwage != 999999) %>%
   group_by(year) %>%
   summarise(median_wage = median(incwage))
+
 ggplot(wages, aes(year, median_wage)) +
   geom_line(linewidth = 1, color = "#1B7A4B") + geom_point() +
   labs(x = NULL, y = "Median wage income")`},
 {sec:"q", area:"econ", tag:"Employment over time",
  q:"From 2016 to 2024, how did the employment rate change?",
- hint:"Filter to ages 18\u201364, group by year, take the share who are employed.",
+ hint:"Filter to ages 18\u201364, group by year, then take the share who are employed.",
  vars:["year","age","empstat"],
  sol:`emp <- data %>%
   filter(age >= 18, age <= 64) %>%
   group_by(year) %>%
   summarise(pct_employed = 100 * mean(empstat == 1))   # 1 = employed
+
 ggplot(emp, aes(year, pct_employed)) +
   geom_line(linewidth = 1, color = "#1B7A4B") + geom_point() +
   labs(x = NULL, y = "% employed (age 18-64)")`},
 {sec:"q", area:"econ", tag:"Work hours by sex",
  q:"In 2024, how big was the gap in average weekly hours worked between men and women?",
- hint:"Keep people who report hours (> 0), group by sex, average usual hours worked.",
+ hint:"Keep people who report hours (> 0), group by sex, then average usual hours worked.",
  vars:["year","uhrswork","sex"],
  sol:`data %>%
   filter(year == 2024, uhrswork > 0) %>%
@@ -627,7 +659,7 @@ ggplot(emp, aes(year, pct_employed)) +
   arrange(desc(median_wage))     # highest-paid occupations at the top`},
 {sec:"q", area:"econ", tag:"Longest work weeks",
  q:"In 2024, which occupations had the longest average work weeks?",
- hint:"Keep workers reporting hours, average usual hours by occupation, sort descending.",
+ hint:"Keep workers reporting hours, average usual hours by occupation, then sort descending.",
  vars:["year","occ2010","uhrswork"],
  sol:`data %>%
   filter(year == 2024, uhrswork > 0) %>%
@@ -636,27 +668,32 @@ ggplot(emp, aes(year, pct_employed)) +
   arrange(desc(avg_hours))`},
 {sec:"q", area:"econ", tag:"Family income by state",
  q:"In 2024, how did median family income differ across states? How does adding a child or two change things?",
- hint:"Drop the N/A family-income code, take a median within each state. NOTE: comparing by number of children needs a children-count variable (e.g. NCHILD) not in the current extract.",
+ hint:"Drop the N/A family-income code, then take a median within each state. To see how children change things, group by nchild (number of own children) as well.",
  vars:["year","ftotinc","statefip","nchild"],
  sol:`fam <- data %>%
   filter(year == 2024, ftotinc != 9999999) %>%
   group_by(statefip) %>%
   summarise(median_family_income = median(ftotinc))
+
 ggplot(fam, aes(reorder(statefip, median_family_income), median_family_income)) +
   geom_col(fill = "#1B7A4B") + coord_flip() +
   labs(x = NULL, y = "Median family income")
-# to see how children change things, add NCHILD to the pull and group_by(nchild)`},
-{sec:"q", area:"econ", tag:"Poverty: 1- vs 2-parent",
- q:"In 2024, what share of single-parent vs. two-parent households lived below the poverty line?",
- hint:"POVERTY is income as a % of the poverty line (below = under 100). NOTE: splitting single- vs two-parent households needs a family-structure variable not in the current extract.",
- vars:["year","poverty"],
- sol:`# NOTE: the single- vs two-parent split needs a household-structure variable
-# (e.g. NMOTHERS / NFATHERS, or a family-type flag) that isn't in this extract.
-# The poverty side, once household_type can be built, looks like:
-data %>%
-  filter(year == 2024, poverty > 0) %>%     # 0 = N/A
-  group_by(household_type) %>%              # <- build from a structure variable
-  summarise(pct_poverty = 100 * mean(poverty < 100))`},
+
+# to see how children change things, add nchild to the grouping
+fam_kids <- data %>%
+  filter(year == 2024, ftotinc != 9999999) %>%
+  group_by(statefip, nchild) %>%
+  summarise(median_family_income = median(ftotinc), .groups = "drop")`},
+{sec:"q", area:"econ", tag:"Family income by number of children",
+ q:"In 2024, how did median family income vary by the number of children in the family?",
+ hint:"Drop the N/A family-income code, then take a weighted median of ftotinc within each number of children (nchild), keeping 0 through 5+.",
+ vars:["year","ftotinc","nchild","perwt"],
+ sol:`fam_kids <- data %>%
+  filter(year == 2024, ftotinc != 9999999) %>%
+  group_by(nchild) %>%
+  summarise(median_family_income = matrixStats::weightedMedian(ftotinc, perwt), .groups = "drop") %>%
+  filter(nchild <= 5) %>%
+  mutate(kids = factor(nchild, labels = c("0","1","2","3","4","5+")))`},
 {sec:"q", area:"immig", tag:"Foreign-born over time",
  q:"From 2016 to 2024, what share of the population was foreign-born?",
  hint:"Take the \u201cborn abroad\u201d test (bpl >= 100), grouped by year.",
@@ -664,6 +701,7 @@ data %>%
  sol:`trend <- data %>%
   group_by(year) %>%
   summarise(pct = 100 * mean(bpl >= 100))   # bpl >= 100 = foreign-born
+
 ggplot(trend, aes(year, pct)) +
   geom_line(linewidth = 1, color = "#B23A48") + geom_point() +
   labs(x = NULL, y = "% foreign-born")`},
@@ -683,6 +721,7 @@ ggplot(trend, aes(year, pct)) +
   filter(bpl >= 100) %>%
   group_by(year) %>%
   summarise(pct = 100 * mean(citizen == 2))   # 2 = naturalized
+
 ggplot(nat, aes(year, pct)) +
   geom_line(linewidth = 1, color = "#B23A48") + geom_point() +
   labs(x = NULL, y = "% naturalized")`},
@@ -694,6 +733,7 @@ ggplot(nat, aes(year, pct)) +
   filter(year == 2024, cismrtphn != 0) %>%
   group_by(statefip) %>%
   summarise(pct = 100 * mean(cismrtphn == 1))   # 1 = yes
+
 ggplot(phones, aes(reorder(statefip, pct), pct)) +
   geom_col(fill = "#6D3FA3") + coord_flip() +
   labs(x = NULL, y = "% with a smartphone")`},
@@ -705,12 +745,13 @@ ggplot(phones, aes(reorder(statefip, pct), pct)) +
   filter(cismrtphn != 0) %>%
   group_by(year) %>%
   summarise(pct = 100 * mean(cismrtphn == 1))
+
 ggplot(sp, aes(year, pct)) +
   geom_line(linewidth = 1, color = "#6D3FA3") + geom_point() +
   labs(x = NULL, y = "% with a smartphone")`},
 {sec:"q", area:"tech", tag:"Smartphones by education",
  q:"In 2024, did smartphone ownership rise with education?",
- hint:"Group by education level, take the smartphone share in each.",
+ hint:"Group by education level, then take the smartphone share in each.",
  vars:["year","cismrtphn","educ"],
  sol:`data %>%
   filter(year == 2024, cismrtphn != 0) %>%
@@ -718,12 +759,13 @@ ggplot(sp, aes(year, pct)) +
   summarise(pct = 100 * mean(cismrtphn == 1))`},
 {sec:"q", area:"energy", tag:"Commute modes",
  q:"In 2024, what were the most common ways people got to work?",
- hint:"Keep commuters, group by transport mode, count how many fall in each.",
+ hint:"Keep commuters, group by transport mode, then count how many fall in each.",
  vars:["year","tranwork"],
  sol:`commute <- data %>%
   filter(year == 2024, tranwork > 0) %>%
   group_by(tranwork) %>%
   summarise(n = n())
+
 ggplot(commute, aes(reorder(tranwork, n), n)) +
   geom_col(fill = "#0E7C86") + coord_flip() +
   labs(x = "Mode (tranwork code)", y = "Workers (sample)")`},
@@ -735,6 +777,7 @@ ggplot(commute, aes(reorder(tranwork, n), n)) +
   filter(year == 2024, costelec > 0, costelec < 9990) %>%  # drop N/A & special codes
   group_by(statefip) %>%
   summarise(avg_bill = mean(costelec))
+
 ggplot(elec, aes(reorder(statefip, avg_bill), avg_bill)) +
   geom_col(fill = "#0E7C86") + coord_flip() +
   labs(x = NULL, y = "Avg annual electricity cost ($)")`},
@@ -746,12 +789,13 @@ ggplot(elec, aes(reorder(statefip, avg_bill), avg_bill)) +
   filter(tranwork > 0) %>%
   group_by(year) %>%
   summarise(pct_wfh = 100 * mean(tranwork == 80))   # 80 = worked at home
+
 ggplot(wfh, aes(year, pct_wfh)) +
   geom_line(linewidth = 1, color = "#0E7C86") + geom_point() +
   labs(x = NULL, y = "% working from home")`},
 {sec:"q", area:"fun", tag:"Earliest to work",
  q:"Which occupations leave for work the earliest?",
- hint:"DEPARTS is a 24-hour clock (0600 = 6 a.m.). Keep commuters, average departure time by occupation, sort. (Bakers win.)",
+ hint:"DEPARTS is a 24-hour clock (0600 = 6 a.m.). Keep commuters, average departure time by occupation, then sort. (Bakers win.)",
  vars:["occ2010","departs"],
  sol:`data %>%
   filter(departs > 0) %>%
@@ -766,12 +810,13 @@ ggplot(wfh, aes(year, pct_wfh)) +
   filter(departs > 0) %>%
   group_by(statefip) %>%
   summarise(pct = 100 * mean(departs < 500))   # before 5:00 a.m.
+
 ggplot(night, aes(reorder(statefip, pct), pct)) +
   geom_col(fill = "#C97703") + coord_flip() +
   labs(x = NULL, y = "% leaving before 5 a.m.")`},
 {sec:"q", area:"fun", tag:"Does WFH pay?",
  q:"Do people who work from home out-earn commuters?",
- hint:"Group by whether the commute mode was \u201cworked at home\u201d (80), compare median wage income.",
+ hint:"Group by whether the commute mode was \u201cworked at home\u201d (80), then compare median wage income.",
  vars:["tranwork","incwage"],
  sol:`data %>%
   filter(incwage > 0, incwage != 999999) %>%
@@ -779,7 +824,7 @@ ggplot(night, aes(reorder(statefip, pct), pct)) +
   summarise(median_wage = median(incwage))`},
 {sec:"q", area:"fun", tag:"Overqualified paycheck",
  q:"In 2024, which jobs paid the most to workers without a bachelor's degree?",
- hint:"Filter to workers below a bachelor\u2019s (educ < 10) with real wages, take median wage by occupation, sort.",
+ hint:"Filter to workers below a bachelor\u2019s (educ < 10) with real wages, take median wage by occupation, then sort.",
  vars:["year","educ","occ2010","incwage"],
  sol:`data %>%
   filter(year == 2024, educ < 10, incwage > 0, incwage != 999999) %>%
@@ -788,7 +833,7 @@ ggplot(night, aes(reorder(statefip, pct), pct)) +
   arrange(desc(median_wage))`},
 {sec:"q", area:"fun", tag:"Hours by marital status",
  q:"How do weekly hours worked differ by marital status?",
- hint:"Keep people who report hours, group by marital status, average usual hours worked.",
+ hint:"Keep people who report hours, group by marital status, then average usual hours worked.",
  vars:["marst","uhrswork"],
  sol:`data %>%
   filter(uhrswork > 0) %>%
@@ -803,6 +848,7 @@ data %>%
   filter(tranwork %in% c(20, 39, 50)) %>%
   group_by(tranwork) %>%
   summarise(n = n())
+
 # occupations that use public transit most (bus/rail codes 31-37)
 data %>%
   filter(tranwork %in% c(31, 32, 33, 34, 35, 36, 37)) %>%
