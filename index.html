@@ -504,52 +504,7 @@ ggplot(medicaid_grp, aes(x = as.numeric(year), y = n, color = group)) +
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
 
-ggsave("Results/medicaid_adults_vs_kids.png", width = 8, height = 5)`},
-   {h:`<div class="h3">The many things you can add</div>
-     <div class="note">Heads up: this example runs on a <b>different data pull</b> (a <span class="tok">medicaid2</span>
-     table from a separate immigration project) \u2014 it's here to show the styling options, not to run on today's data.</div>
-     <p class="lede">Custom colours, a percent axis, a labelled reference line, titles and captions, and a full
-     theme produce the chart below. </p>`},
-   {codedrop:`ggplot(medicaid2, aes(x = as.numeric(year), y = medicaid_rate, color = group)) +
-  geom_line(linewidth = 1.2) +
-  geom_point(size = 2) +
-  scale_color_manual(values = c(
-    "Native-born" = "#3043B4",
-    "Immigrants"  = "#C97703")) +
-  scale_x_continuous(breaks = seq(2010, 2024, by = 2), expand = c(0.02, 0)) +
-  scale_y_continuous(
-    labels = scales::percent,
-    breaks = seq(0, 1, by = 0.05),
-    expand = c(0.02, 0)) +
-  geom_vline(xintercept = 2014, linetype = "dashed", color = "gray50", linewidth = 0.5) +
-  annotate("text", x = 2014.1, y = 0.19, label = "ACA (2014)",
-           hjust = 0, size = 3, color = "gray50") +
-  labs(
-    title = "Medicaid Rate: Native-Born vs All Immigrants (2010-2024)",
-    subtitle = "ACS",
-    x = NULL, y = NULL, color = NULL,
-    caption = "Source: ACS PUMS via IPUMS") +
-  theme_minimal() +
-  theme(
-    plot.title = element_text(size = 14, face = "bold", hjust = 0, color = "black"),
-    plot.subtitle = element_text(size = 11, color = "gray40", hjust = 0, margin = margin(b = 12)),
-    legend.position = "top",
-    legend.justification = "left",
-    legend.text = element_text(size = 10),
-    legend.key.width = unit(1.5, "cm"),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor = element_blank(),
-    panel.grid.major.y = element_line(color = "gray90", linewidth = 0.5),
-    axis.line = element_blank(),
-    axis.ticks = element_blank(),
-    axis.text.x = element_text(size = 10, color = "gray40"),
-    axis.text.y = element_text(size = 10, color = "gray40"),
-    plot.caption = element_text(size = 8, color = "gray40", hjust = 0),
-    plot.caption.position = "plot",
-    plot.title.position = "plot",
-    plot.background = element_rect(fill = "white", color = NA),
-    panel.background = element_rect(fill = "white", color = NA))`},
-   {h:`<figure class="fig"><img src="Results/ACS_medicaid2.png" alt="Medicaid rate: native-born vs immigrants, 2010-2024"><figcaption>Results/ACS_medicaid2.png</figcaption></figure>`}]},
+ggsave("Results/medicaid_adults_vs_kids.png", width = 8, height = 5)`}]},
 {sec:"book", area:"book", tag:"Demographics", kick:"Codebook", q:"Codebook — who each person is",
  blocks:[{h:`<div class="var"><div class="vh"><span class="vn">year</span><span class="vd">Census/survey year</span></div><p class="vdef">Survey year. This extract has one ACS sample per year, 2016 through 2024.</p></div><div class="var"><div class="vh"><span class="vn">statefip</span><span class="vd">State (FIPS code)</span></div><table class="codes"><tr><td class="c">06</td><td>California</td></tr><tr><td class="c">36</td><td>New York</td></tr><tr><td class="c">48</td><td>Texas</td></tr></table><p class="vdef">Full state list is in the IPUMS codebook; TX=48, CA=6, NY=36 are the ones used in the questions.</p></div><div class="var"><div class="vh"><span class="vn">sex</span><span class="vd">Sex</span></div><table class="codes"><tr><td class="c">1</td><td>Male</td></tr><tr><td class="c">2</td><td>Female</td></tr></table></div><div class="var"><div class="vh"><span class="vn">age</span><span class="vd">Age</span></div><p class="vdef">Age in years. 000 = under 1; 999 = missing.</p></div><div class="var"><div class="vh"><span class="vn">marst</span><span class="vd">Marital status</span></div><table class="codes"><tr><td class="c">1</td><td>Married, spouse present</td></tr><tr><td class="c">2</td><td>Married, spouse absent</td></tr><tr><td class="c">3</td><td>Separated</td></tr><tr><td class="c">4</td><td>Divorced</td></tr><tr><td class="c">5</td><td>Widowed</td></tr><tr><td class="c">6</td><td>Never married/single</td></tr></table></div><div class="var"><div class="vh"><span class="vn">bpl</span><span class="vd">Birthplace</span></div><p class="vdef">Codes below 100 are U.S. states/territories; 100 and up are foreign countries. So bpl &gt;= 100 means foreign-born.</p></div><div class="var"><div class="vh"><span class="vn">citizen</span><span class="vd">Citizenship status</span></div><table class="codes"><tr><td class="c">0</td><td>N/A (born in the U.S.)</td></tr><tr><td class="c">1</td><td>Born abroad of American parents</td></tr><tr><td class="c">2</td><td>Naturalized citizen</td></tr><tr><td class="c">3</td><td>Not a citizen</td></tr></table></div><div class="var"><div class="vh"><span class="vn">yrimmig</span><span class="vd">Year of immigration</span></div><p class="vdef">Four-digit year the person came to the U.S. 0 = N/A (U.S. born).</p></div><div class="var"><div class="vh"><span class="vn">educ</span><span class="vd">Educational attainment</span></div><table class="codes"><tr><td class="c">06</td><td>Grade 12 (high school)</td></tr><tr><td class="c">07</td><td>1 year of college</td></tr><tr><td class="c">10</td><td>4 years of college (bachelor's)</td></tr><tr><td class="c">11</td><td>5+ years of college</td></tr></table><p class="vdef">Roughly, educ &gt;= 10 means a bachelor's degree or higher.</p></div>`}]},
 {sec:"book", area:"book", tag:"Work & money", kick:"Codebook", q:"Codebook — work &amp; money",
@@ -862,7 +817,10 @@ data %>%
   S.forEach(s=>{
     if(s.sec!=='q')return;
     const p=PREF[s.area]; cnt[p]=(cnt[p]||0)+1; const n=cnt[p];
-    s.img=(p==="bonus"&&n===6)?["bonus6a","bonus6b"]:[p+n];
+    s.img=(p==="bonus"&&n===6)?["bonus6a","bonus6b"]
+         :(p==="education"&&n===1)?["education1","education1b"]
+         :(p==="econ"&&n===6)?["econ6","econ6b"]
+         :[p+n];
   });
 })();
 function hiR(src){

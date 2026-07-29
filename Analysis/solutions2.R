@@ -1,17 +1,15 @@
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(tidyverse, ggthemes, readxl, data.table, ipumsr, matrixStats)
+pacman::p_load(tidyverse, ggthemes, readxl, data.table, gdata, ipumsr, matrixStats)
 
 setwd("C:/Users/CarolXu/OneDrive - Cato Institute/Desktop/Intern Coding Lab")
-
 data <- read_csv("data/acs00015.csv")
 
-## HEALTH -------------------------------------------------------------------------------------------  
+## HEALTH -------------------------------------------------------------------------------------------
 # uninsured, over time
 uninsured <- data %>%
   filter(age >= 18) %>%
   group_by(year) %>%
   summarise(pct = 100 * mean(hcovany == 1))   # hcovany 1 = no coverage
-
 ggplot(uninsured, aes(year, pct)) +
   geom_line(linewidth = 1, color = "#3043B4") + geom_point() +
   labs(x = NULL, y = "% uninsured")
@@ -20,7 +18,6 @@ uninsured <- data %>%
   filter(age >= 18) %>%
   group_by(year) %>%
   summarise(pct = 100 * weighted.mean(hcovany == 1, perwt), .groups = "drop")   # hcovany 1 = no coverage
-
 ggplot(uninsured, aes(x = as.numeric(year), y = pct)) +
   geom_line(linewidth = 1.2, color = "#3043B4") +
   geom_point(size = 2, color = "#3043B4") +
@@ -43,7 +40,6 @@ ggplot(uninsured, aes(x = as.numeric(year), y = pct)) +
     plot.caption.position = "plot", plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/health1.png", width = 8, height = 6)
 
 # Kids on Medicaid/CHIP
@@ -51,7 +47,6 @@ kids <- data %>%
   filter(age < 19, statefip %in% c(48, 6, 36)) %>%   # 48 TX, 6 CA, 36 NY
   group_by(year, statefip) %>%
   summarise(pct = 100 * mean(hinscaid == 2), .groups = "drop")   # 2 = Medicaid/CHIP
-
 ggplot(kids, aes(year, pct, color = factor(statefip))) +
   geom_line(linewidth = 1) + geom_point() +
   labs(x = NULL, y = "% of children on Medicaid", color = "State")
@@ -61,7 +56,6 @@ kids <- data %>%
   group_by(year, statefip) %>%
   summarise(pct = 100 * weighted.mean(hinscaid == 2, perwt), .groups = "drop") %>%  # 2 = Medicaid/CHIP
   mutate(state = recode(statefip, `6` = "California", `36` = "New York", `48` = "Texas"))
-
 ggplot(kids, aes(x = as.numeric(year), y = pct, color = state)) +
   geom_line(linewidth = 1.2) +
   geom_point(size = 2) +
@@ -96,7 +90,6 @@ ggplot(kids, aes(x = as.numeric(year), y = pct, color = state)) +
     plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/health2.png", width = 8, height = 6)
 
 #  Medicaid by employment
@@ -111,7 +104,6 @@ emp_medicaid <- data %>%
   summarise(pct_medicaid = 100 * weighted.mean(hinscaid == 2, perwt), .groups = "drop") %>%
   mutate(status = recode(empstat,
     `1` = "Employed", `2` = "Unemployed", `3` = "Not in labor force"))
-
 ggplot(emp_medicaid, aes(x = reorder(status, pct_medicaid), y = pct_medicaid)) +
   geom_col(fill = "#3043B4") +
   coord_flip() +
@@ -137,7 +129,6 @@ ggplot(emp_medicaid, aes(x = reorder(status, pct_medicaid), y = pct_medicaid)) +
     plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/health3.png", width = 8, height = 6)
 
 ##  EDUCATION ---------------------------------------------------------------------------------------
@@ -146,7 +137,6 @@ inc <- data %>%
   filter(inctot != 9999999) %>%   # 9999999 = N/A
   group_by(educ) %>%
   summarise(median_income = median(inctot))
-
 ggplot(inc, aes(factor(educ), median_income)) +
   geom_col(fill = "#0D0E51") +
   labs(x = "Education level (educ code)", y = "Median personal income")
@@ -166,14 +156,12 @@ educ_lk <- tibble::tribble(
   10, "Bachelor's",
   11, "5+ yrs college"
 )
-
 inc <- data %>%
   filter(year == 2024, inctot != 9999999, age >= 18, age <= 64) %>%   # 2024, working-age adults; 9999999 = N/A
   group_by(educ) %>%
   summarise(median_income = matrixStats::weightedMedian(inctot, perwt), .groups = "drop") %>%
   left_join(educ_lk, by = "educ") %>%
   mutate(label = factor(label, levels = educ_lk$label))   # keep education in order
-
 ggplot(inc, aes(x = label, y = median_income)) +
   geom_col(fill = "#0D0E51") +
   scale_y_continuous(labels = scales::label_dollar(),
@@ -199,8 +187,52 @@ ggplot(inc, aes(x = label, y = median_income)) +
     plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/education1.png", width = 8, height = 6)
+
+# Personal income over time: nominal (inctot) vs. real (inctot2024)
+# plot inctot first, then add inctot2024 as a faded dashed line -- the gap is inflation
+inc_time <- data %>%
+  filter(inctot != 9999999, age >= 18, age <= 64) %>%
+  group_by(year) %>%
+  summarise(
+    `Nominal (inctot)`          = matrixStats::weightedMedian(inctot, perwt),
+    `2024 dollars (inctot2024)` = matrixStats::weightedMedian(inctot2024, perwt),
+    .groups = "drop") %>%
+  pivot_longer(-year, names_to = "measure", values_to = "median_income")
+ggplot(inc_time, aes(x = as.numeric(year), y = median_income,
+                     color = measure, linetype = measure)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 2) +
+  scale_color_manual(values = c(
+    "Nominal (inctot)"          = "#0D0E51",
+    "2024 dollars (inctot2024)" = "#9AA0C9")) +
+  scale_linetype_manual(values = c(
+    "Nominal (inctot)"          = "solid",
+    "2024 dollars (inctot2024)" = "dashed")) +
+  scale_x_continuous(breaks = seq(2016, 2024, by = 2), expand = c(0.02, 0)) +
+  scale_y_continuous(labels = scales::label_dollar(), expand = c(0.02, 0)) +
+  labs(
+    title = "Median Personal Income: Nominal vs. 2024 Dollars (2016-2024)",
+    subtitle = "Working-age adults (18-64); the gap between the lines is inflation",
+    x = NULL, y = NULL, color = NULL, linetype = NULL,
+    caption = "Source: ACS PUMS via IPUMS") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold", hjust = 0, color = "black"),
+    plot.subtitle = element_text(size = 11, color = "gray40", hjust = 0, margin = margin(b = 12)),
+    legend.position = "top",
+    legend.justification = "left",
+    legend.text = element_text(size = 10),
+    legend.key.width = unit(1.5, "cm"),
+    panel.grid.major.x = element_blank(), panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_line(color = "gray90", linewidth = 0.5),
+    axis.line = element_blank(), axis.ticks = element_blank(),
+    axis.text = element_text(size = 10, color = "gray40"),
+    plot.caption = element_text(size = 8, color = "gray40", hjust = 0),
+    plot.caption.position = "plot", plot.title.position = "plot",
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA))
+ggsave("Results/education1b.png", width = 8, height = 6)
 
 # Degrees by sex
 data %>%
@@ -213,7 +245,6 @@ degrees <- data %>%
   group_by(sex) %>%              # 1 male, 2 female
   summarise(pct_ba = 100 * weighted.mean(educ >= 10, perwt), .groups = "drop") %>%  # educ >= 10 ~ bachelor's+
   mutate(sex = recode(sex, `1` = "Men", `2` = "Women"))
-
 ggplot(degrees, aes(x = sex, y = pct_ba, fill = sex)) +
   geom_col(width = 0.65) +
   scale_fill_manual(values = c("Men" = "skyblue", "Women" = "pink"), guide = "none") +
@@ -239,51 +270,42 @@ ggplot(degrees, aes(x = sex, y = pct_ba, fill = sex)) +
     plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/education2.png", width = 8, height = 6)
 
 # Lawyers with econ degree
 data %>%
-  filter(age >= 25, age <= 34, occ2010 == 2100, degfieldd == 5501) %>%   # 2100 = lawyers, judges
+  filter(age >= 25, age <= 34, occ2010 == 2100, degfieldd == 5501) %>%   # 2100 = lawyers/judges, 5501 = economics
   summarise(n = n())
 
-# DEGFIELD field-of-degree labels (common codes; extend as needed)
-
-lawyer_fields <- data %>%
-  filter(year == 2024, age >= 25, age <= 34, occ2010 == 2100) %>%   # 2100 = lawyers, judges
-  group_by(degfieldd) %>%
-  summarise(population = sum(perwt), .groups = "drop") %>%           # weighted estimate of people
-  slice_max(population, n = 10) %>%                                  # top 10 fields
-  left_join(degfield_lk, by = "degfield") %>%
-  mutate(field = coalesce(field, paste0("Field ", degfieldd)),
-         is_econ = degfieldd == 5501)                                  # 54 = economics
-
-ggplot(lawyer_fields, aes(x = reorder(field, population), y = population, fill = is_econ)) +
-  geom_col() +
-  coord_flip() +
-  scale_fill_manual(values = c(`TRUE` = "#C97703", `FALSE` = "#0D0E51"), guide = "none") +
+# weighted: young lawyers with an economics degree vs. any other field
+lawyer_degree <- data %>%
+  filter(year == 2024, age >= 25, age <= 34, occ2010 == 2100, degfieldd > 0) %>%  # 2100 = lawyers/judges; keep those reporting a degree field
+  group_by(field = if_else(degfieldd == 5501, "Economics", "Other field")) %>%    # 5501 = economics
+  summarise(lawyers = sum(perwt), .groups = "drop")
+ggplot(lawyer_degree, aes(x = reorder(field, lawyers), y = lawyers, fill = field)) +
+  geom_col(width = 0.65) +
+  scale_fill_manual(values = c("Economics" = "#C97703", "Other field" = "#0D0E51"), guide = "none") +
   scale_y_continuous(labels = scales::label_comma(), expand = expansion(mult = c(0, 0.04))) +
   labs(
-    title = "Field of Degree Among Young Lawyers (2024)",
-    subtitle = "Lawyers and judges aged 25-34, by field of bachelor's degree (weighted); economics in orange",
+    title = "Young Lawyers With an Economics Degree (2024)",
+    subtitle = "Lawyers and judges aged 25-34, by whether their bachelor's field was economics (weighted)",
     x = NULL, y = NULL,
     caption = "Source: ACS PUMS via IPUMS") +
   theme_minimal() +
   theme(
     plot.title = element_text(size = 14, face = "bold", hjust = 0, color = "black"),
     plot.subtitle = element_text(size = 11, color = "gray40", hjust = 0, margin = margin(b = 12)),
-    panel.grid.major.y = element_blank(),
+    panel.grid.major.x = element_blank(),
     panel.grid.minor = element_blank(),
-    panel.grid.major.x = element_line(color = "gray90", linewidth = 0.5),
+    panel.grid.major.y = element_line(color = "gray90", linewidth = 0.5),
     axis.line = element_blank(),
     axis.ticks = element_blank(),
-    axis.text = element_text(size = 9, color = "gray40"),
+    axis.text = element_text(size = 10, color = "gray40"),
     plot.caption = element_text(size = 8, color = "gray40", hjust = 0),
     plot.caption.position = "plot",
     plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/education3.png", width = 8, height = 6)
 
 ## GENERAL ECONOMICS --------------------------------------------------------------------------------
@@ -292,7 +314,6 @@ wages <- data %>%
   filter(incwage > 0, incwage != 999999) %>%
   group_by(year) %>%
   summarise(median_wage = matrixStats::weightedMedian(incwage, perwt), .groups = "drop")
-
 ggplot(wages, aes(x = as.numeric(year), y = median_wage)) +
   geom_line(linewidth = 1.2, color = "#1B7A4B") +
   geom_point(size = 2, color = "#1B7A4B") +
@@ -315,7 +336,6 @@ ggplot(wages, aes(x = as.numeric(year), y = median_wage)) +
     plot.caption.position = "plot", plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/econ1.png", width = 8, height = 6)
 
 # employment over time
@@ -323,7 +343,6 @@ emp <- data %>%
   filter(age >= 18, age <= 64) %>%
   group_by(year) %>%
   summarise(pct_employed = 100 * weighted.mean(empstat == 1, perwt), .groups = "drop")  # 1 = employed
-
 ggplot(emp, aes(x = as.numeric(year), y = pct_employed)) +
   geom_line(linewidth = 1.2, color = "#1B7A4B") +
   geom_point(size = 2, color = "#1B7A4B") +
@@ -346,7 +365,6 @@ ggplot(emp, aes(x = as.numeric(year), y = pct_employed)) +
     plot.caption.position = "plot", plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/econ2.png", width = 8, height = 6)
 
 # work hours by sex
@@ -355,7 +373,6 @@ hours <- data %>%
   group_by(sex) %>%
   summarise(avg_hours = weighted.mean(uhrswork, perwt), .groups = "drop") %>%
   mutate(sex = recode(sex, `1` = "Men", `2` = "Women"))
-
 ggplot(hours, aes(x = sex, y = avg_hours, fill = sex)) +
   geom_col(width = 0.65) +
   scale_fill_manual(values = c("Men" = "#1B7A4B", "Women" = "pink"), guide = "none") +
@@ -378,7 +395,6 @@ ggplot(hours, aes(x = sex, y = avg_hours, fill = sex)) +
     plot.caption.position = "plot", plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/econ3.png", width = 8, height = 6)
 
 # wages by occupation
@@ -388,15 +404,11 @@ occ_wages <- data %>%
   summarise(median_wage = matrixStats::weightedMedian(incwage, perwt),
             n = n(), .groups = "drop") %>%
   filter(n >= 100)                     # drop tiny, noisy occupation cells
-
-
 occ_wages <- occ_wages %>%
-  mutate(occ_label = as.character(occ2010))   
-
+  mutate(occ_label = as.character(occ2010))
 ends <- bind_rows(
   slice_max(occ_wages, median_wage, n = 15) %>% mutate(grp = "Highest-paid"),
   slice_min(occ_wages, median_wage, n = 15) %>% mutate(grp = "Lowest-paid"))
-
 ggplot(ends, aes(x = reorder(occ_label, median_wage), y = median_wage, fill = grp)) +
   geom_col() +
   coord_flip() +
@@ -422,7 +434,6 @@ ggplot(ends, aes(x = reorder(occ_label, median_wage), y = median_wage, fill = gr
     plot.caption.position = "plot", plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/econ4.png", width = 8, height = 6)
 
 # longest work weeks
@@ -432,9 +443,8 @@ occ_hours <- data %>%
   summarise(avg_hours = weighted.mean(uhrswork, perwt),
             n = n(), .groups = "drop") %>%
   filter(n >= 100) %>%
-  mutate(occ_label = as.character(occ2010)) %>%   
+  mutate(occ_label = as.character(occ2010)) %>%
   slice_max(avg_hours, n = 15)
-
 ggplot(occ_hours, aes(x = reorder(occ_label, avg_hours), y = avg_hours)) +
   geom_col(fill = "#1B7A4B") +
   scale_y_continuous(expand = expansion(mult = c(0, 0.04))) +
@@ -456,7 +466,6 @@ ggplot(occ_hours, aes(x = reorder(occ_label, avg_hours), y = avg_hours)) +
     plot.caption.position = "plot", plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/econ5.png", width = 8, height = 6)
 
 # family income by state
@@ -469,13 +478,11 @@ state_lk <- tibble::tribble(
   40,"OK", 41,"OR", 42,"PA", 44,"RI", 45,"SC", 46,"SD", 47,"TN", 48,"TX", 49,"UT",
   50,"VT", 51,"VA", 53,"WA", 54,"WV", 55,"WI", 56,"WY", 72,"PR"
 )
-
 fam <- data %>%
   filter(year == 2024, ftotinc != 9999999) %>%
   group_by(statefip) %>%
   summarise(median_family_income = matrixStats::weightedMedian(ftotinc, perwt), .groups = "drop") %>%
   left_join(state_lk, by = "statefip")
-
 ggplot(fam, aes(x = reorder(abb, median_family_income), y = median_family_income)) +
   geom_col(fill = "#25b490") +
   coord_flip() +
@@ -497,17 +504,60 @@ ggplot(fam, aes(x = reorder(abb, median_family_income), y = median_family_income
     plot.caption.position = "plot", plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/econ6.png", width = 8, height = 6)
 
-# poverty: 1 vs 2 parent
+# family income over time: nominal (ftotinc) vs. real (ftotinc2024)
+# plot ftotinc first, then add ftotinc2024 as a faded dashed line -- the gap is inflation
+fam_time <- data %>%
+  filter(ftotinc != 9999999) %>%
+  group_by(year) %>%
+  summarise(
+    `Nominal (ftotinc)`          = matrixStats::weightedMedian(ftotinc, perwt),
+    `2024 dollars (ftotinc2024)` = matrixStats::weightedMedian(ftotinc2024, perwt),
+    .groups = "drop") %>%
+  pivot_longer(-year, names_to = "measure", values_to = "median_income")
+ggplot(fam_time, aes(x = as.numeric(year), y = median_income,
+                     color = measure, linetype = measure)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 2) +
+  scale_color_manual(values = c(
+    "Nominal (ftotinc)"          = "#1B7A4B",
+    "2024 dollars (ftotinc2024)" = "#8FC7B0")) +
+  scale_linetype_manual(values = c(
+    "Nominal (ftotinc)"          = "solid",
+    "2024 dollars (ftotinc2024)" = "dashed")) +
+  scale_x_continuous(breaks = seq(2016, 2024, by = 2), expand = c(0.02, 0)) +
+  scale_y_continuous(labels = scales::label_dollar(), expand = c(0.02, 0)) +
+  labs(
+    title = "Median Family Income: Nominal vs. 2024 Dollars (2016-2024)",
+    subtitle = "The gap between the lines is inflation",
+    x = NULL, y = NULL, color = NULL, linetype = NULL,
+    caption = "Source: ACS PUMS via IPUMS") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold", hjust = 0, color = "black"),
+    plot.subtitle = element_text(size = 11, color = "gray40", hjust = 0, margin = margin(b = 12)),
+    legend.position = "top",
+    legend.justification = "left",
+    legend.text = element_text(size = 10),
+    legend.key.width = unit(1.5, "cm"),
+    panel.grid.major.x = element_blank(), panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_line(color = "gray90", linewidth = 0.5),
+    axis.line = element_blank(), axis.ticks = element_blank(),
+    axis.text = element_text(size = 10, color = "gray40"),
+    plot.caption = element_text(size = 8, color = "gray40", hjust = 0),
+    plot.caption.position = "plot", plot.title.position = "plot",
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA))
+ggsave("Results/econ6b.png", width = 8, height = 6)
+
+# family income by number of children
 fam_kids <- data %>%
   filter(year == 2024, ftotinc != 9999999) %>%
   group_by(nchild) %>%
   summarise(median_family_income = matrixStats::weightedMedian(ftotinc, perwt), .groups = "drop") %>%
   filter(nchild <= 5) %>%
   mutate(kids = factor(nchild, labels = c("0","1","2","3","4","5+")))
-
 ggplot(fam_kids, aes(x = kids, y = median_family_income)) +
   geom_col(fill = "#1B7A4B") +
   scale_y_continuous(labels = scales::label_dollar(), expand = expansion(mult = c(0, 0.04))) +
@@ -529,7 +579,6 @@ ggplot(fam_kids, aes(x = kids, y = median_family_income)) +
     plot.caption.position = "plot", plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/econ7.png", width = 8, height = 6)
 
 ## IMMIGRATION --------------------------------------------------------------------------------------
@@ -537,7 +586,6 @@ ggsave("Results/econ7.png", width = 8, height = 6)
 trend <- data %>%
   group_by(year) %>%
   summarise(pct = 100 * mean(bpl >= 100))   # bpl >= 100 = foreign-born
-
 ggplot(trend, aes(year, pct)) +
   geom_line(linewidth = 1, color = "#B23A48") + geom_point() +
   labs(x = NULL, y = "% foreign-born")
@@ -545,7 +593,6 @@ ggplot(trend, aes(year, pct)) +
 fb <- data %>%
   group_by(year) %>%
   summarise(pct = 100 * weighted.mean(bpl >= 100, perwt), .groups = "drop")   # bpl >= 100 = foreign-born
-
 ggplot(fb, aes(x = as.numeric(year), y = pct)) +
   geom_line(linewidth = 1.2, color = "#B23A48") +
   geom_point(size = 2, color = "#B23A48") +
@@ -568,7 +615,6 @@ ggplot(fb, aes(x = as.numeric(year), y = pct)) +
     plot.caption.position = "plot", plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/immigration1.png", width = 8, height = 6)
 
 # immigrant arrival & income
@@ -581,7 +627,6 @@ arrival <- data %>%
   filter(year == 2024, citizen == 3, yrimmig > 0, inctot != 9999999) %>%   # 3 = not a citizen
   group_by(arrived = if_else(yrimmig <= 1999, "1999 or earlier", "2000 or later")) %>%
   summarise(median_income = matrixStats::weightedMedian(inctot, perwt), .groups = "drop")
-
 ggplot(arrival, aes(x = arrived, y = median_income, fill = arrived)) +
   geom_col(width = 0.65) +
   scale_fill_manual(values = c("1999 or earlier" = "#3043B4", "2000 or later" = "#C97703"),
@@ -604,7 +649,6 @@ ggplot(arrival, aes(x = arrived, y = median_income, fill = arrived)) +
     plot.caption.position = "plot", plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/immigration2.png", width = 8, height = 6)
 
 # naturalized over time
@@ -612,7 +656,6 @@ nat <- data %>%
   filter(bpl >= 100) %>%
   group_by(year) %>%
   summarise(pct = 100 * mean(citizen == 2))   # 2 = naturalized
-
 ggplot(nat, aes(year, pct)) +
   geom_line(linewidth = 1, color = "#B23A48") + geom_point() +
   labs(x = NULL, y = "% naturalized")
@@ -621,7 +664,6 @@ nat <- data %>%
   filter(bpl >= 100) %>%
   group_by(year) %>%
   summarise(pct = 100 * weighted.mean(citizen == 2, perwt), .groups = "drop")   # 2 = naturalized
-
 ggplot(nat, aes(x = as.numeric(year), y = pct)) +
   geom_line(linewidth = 1.2, color = "#B23A48") +
   geom_point(size = 2, color = "#B23A48") +
@@ -644,16 +686,16 @@ ggplot(nat, aes(x = as.numeric(year), y = pct)) +
     plot.caption.position = "plot", plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/immigration3.png", width = 8, height = 6)
 
 ## TECHNOLOGY ---------------------------------------------------------------------------------------
+# NOTE: the smartphone questions are household-level, so these weight by hhwt and take one row
+# per household (distinct on serial). Make sure hhwt and serial are included in the IPUMS extract.
 # smartphones by state
 phones <- data %>%
   filter(year == 2024, cismrtphn != 0) %>%
   group_by(statefip) %>%
   summarise(pct = 100 * mean(cismrtphn == 1))   # 1 = yes
-
 ggplot(phones, aes(reorder(statefip, pct), pct)) +
   geom_col(fill = "#6D3FA3") + coord_flip() +
   labs(x = NULL, y = "% with a smartphone")
@@ -665,7 +707,6 @@ phones <- data %>%
   summarise(pct = 100 * weighted.mean(cismrtphn == 1, hhwt),
             .groups = "drop") %>%              # 1 = yes
   left_join(state_lk, by = "statefip")
-
 ggplot(phones, aes(x = reorder(abb, pct), y = pct)) +
   geom_col(fill = "#6D3FA3") +
   coord_flip() +
@@ -693,7 +734,6 @@ ggplot(phones, aes(x = reorder(abb, pct), y = pct)) +
     plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/tech1.png", width = 8, height = 6)
 
 # smartphones over time
@@ -701,7 +741,6 @@ sp <- data %>%
   filter(cismrtphn != 0) %>%
   group_by(year) %>%
   summarise(pct = 100 * mean(cismrtphn == 1))
-
 ggplot(sp, aes(year, pct)) +
   geom_line(linewidth = 1, color = "#6D3FA3") + geom_point() +
   labs(x = NULL, y = "% with a smartphone")
@@ -712,7 +751,6 @@ sp <- data %>%
   group_by(year) %>%
   summarise(pct = 100 * weighted.mean(cismrtphn == 1, hhwt),
             .groups = "drop")
-
 ggplot(sp, aes(x = as.numeric(year), y = pct)) +
   geom_line(linewidth = 1.2, color = "#6D3FA3") +
   geom_point(size = 2, color = "#6D3FA3") +
@@ -743,7 +781,6 @@ ggplot(sp, aes(x = as.numeric(year), y = pct)) +
     plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/tech2.png", width = 8, height = 6)
 
 # smartphones by education
@@ -759,7 +796,6 @@ phone_educ <- data %>%
             .groups = "drop") %>%
   left_join(educ_lk, by = "educ") %>%
   mutate(label = factor(label, levels = educ_lk$label))
-
 ggplot(phone_educ, aes(x = label, y = pct)) +
   geom_col(fill = "#6D3FA3") +
   scale_y_continuous(
@@ -787,7 +823,6 @@ ggplot(phone_educ, aes(x = label, y = pct)) +
     plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/tech3.png", width = 8, height = 6)
 
 ## ENERGY / ENVIRONMENT -----------------------------------------------------------------------------
@@ -796,7 +831,6 @@ commute <- data %>%
   filter(year == 2024, tranwork > 0) %>%
   group_by(tranwork) %>%
   summarise(n = n())
-
 ggplot(commute, aes(reorder(tranwork, n), n)) +
   geom_col(fill = "#0E7C86") + coord_flip() +
   labs(x = "Mode (tranwork code)", y = "Workers (sample)")
@@ -813,7 +847,6 @@ commute <- data %>%
     TRUE                           ~ "Other")) %>%
   group_by(mode) %>%
   summarise(workers = sum(perwt), .groups = "drop")
-
 ggplot(commute, aes(x = reorder(mode, workers), y = workers)) +
   geom_col(fill = "#0E7C86") +
   coord_flip() +
@@ -841,7 +874,6 @@ ggplot(commute, aes(x = reorder(mode, workers), y = workers)) +
     plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/energy1.png", width = 8, height = 6)
 
 # electricity bills by state
@@ -849,7 +881,6 @@ elec <- data %>%
   filter(year == 2024, costelec > 0, costelec < 9990) %>%
   group_by(statefip) %>%
   summarise(avg_bill = mean(costelec))
-
 ggplot(elec, aes(reorder(statefip, avg_bill), avg_bill)) +
   geom_col(fill = "#0E7C86") + coord_flip() +
   labs(x = NULL, y = "Avg annual electricity cost ($)")
@@ -861,7 +892,6 @@ elec <- data %>%
   summarise(avg_bill = weighted.mean(costelec, hhwt),
             .groups = "drop") %>%
   left_join(state_lk, by = "statefip")
-
 ggplot(elec, aes(x = reorder(abb, avg_bill), y = avg_bill)) +
   geom_col(fill = "#0E7C86") +
   coord_flip() +
@@ -889,7 +919,6 @@ ggplot(elec, aes(x = reorder(abb, avg_bill), y = avg_bill)) +
     plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/energy2.png", width = 8, height = 6)
 
 # work from home over time
@@ -897,7 +926,6 @@ wfh <- data %>%
   filter(tranwork > 0) %>%
   group_by(year) %>%
   summarise(pct_wfh = 100 * mean(tranwork == 80))   # 80 = worked at home
-
 ggplot(wfh, aes(year, pct_wfh)) +
   geom_line(linewidth = 1, color = "#0E7C86") + geom_point() +
   labs(x = NULL, y = "% working from home")
@@ -908,7 +936,6 @@ wfh <- data %>%
   summarise(
     pct_wfh = 100 * weighted.mean(tranwork == 80, perwt),
     .groups = "drop")   # 80 = worked at home
-
 ggplot(wfh, aes(x = as.numeric(year), y = pct_wfh)) +
   geom_line(linewidth = 1.2, color = "#0E7C86") +
   geom_point(size = 2, color = "#0E7C86") +
@@ -939,7 +966,6 @@ ggplot(wfh, aes(x = as.numeric(year), y = pct_wfh)) +
     plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/energy3.png", width = 8, height = 6)
 
 ## BONUS --------------------------------------------------------------------------------------------
@@ -967,7 +993,6 @@ early <- data %>%
       "%d:%02d a.m.",
       floor(avg_minutes / 60),
       round(avg_minutes %% 60)))
-
 ggplot(early, aes(x = reorder(occ_label, -avg_minutes), y = avg_minutes)) +
   geom_col(fill = "#C97703") +
   coord_flip() +
@@ -1001,7 +1026,6 @@ ggplot(early, aes(x = reorder(occ_label, -avg_minutes), y = avg_minutes)) +
     plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/bonus1.png", width = 8, height = 6)
 
 # night-shift states
@@ -1009,7 +1033,6 @@ night <- data %>%
   filter(departs > 0) %>%
   group_by(statefip) %>%
   summarise(pct = 100 * mean(departs < 500))   # before 5:00 a.m.
-
 ggplot(night, aes(reorder(statefip, pct), pct)) +
   geom_col(fill = "#C97703") + coord_flip() +
   labs(x = NULL, y = "% leaving before 5 a.m.")
@@ -1021,7 +1044,6 @@ night <- data %>%
     pct = 100 * weighted.mean(departs < 500, perwt),
     .groups = "drop") %>%                       # before 5:00 a.m.
   left_join(state_lk, by = "statefip")
-
 ggplot(night, aes(x = reorder(abb, pct), y = pct)) +
   geom_col(fill = "#C97703") +
   coord_flip() +
@@ -1049,7 +1071,6 @@ ggplot(night, aes(x = reorder(abb, pct), y = pct)) +
     plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/bonus2.png", width = 8, height = 6)
 
 # does WFH pay?
@@ -1069,7 +1090,6 @@ wfh_pay <- data %>%
   summarise(
     median_wage = matrixStats::weightedMedian(incwage, perwt),
     .groups = "drop")
-
 ggplot(wfh_pay, aes(x = work_location, y = median_wage, fill = work_location)) +
   geom_col(width = 0.65) +
   scale_fill_manual(
@@ -1099,7 +1119,6 @@ ggplot(wfh_pay, aes(x = work_location, y = median_wage, fill = work_location)) +
     plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/bonus3.png", width = 8, height = 6)
 
 # overqualified paycheck
@@ -1124,7 +1143,6 @@ no_ba_pay <- data %>%
   filter(n >= 100) %>%
   slice_max(median_wage, n = 15, with_ties = FALSE) %>%
   mutate(occ_label = as.character(occ2010))
-
 ggplot(no_ba_pay, aes(x = reorder(occ_label, median_wage), y = median_wage)) +
   geom_col(fill = "#C97703") +
   coord_flip() +
@@ -1152,7 +1170,6 @@ ggplot(no_ba_pay, aes(x = reorder(occ_label, median_wage), y = median_wage)) +
     plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/bonus4.png", width = 8, height = 6)
 
 # hours by marital status
@@ -1173,7 +1190,6 @@ marital_hours <- data %>%
   summarise(
     avg_hours = weighted.mean(uhrswork, perwt),
     .groups = "drop")
-
 ggplot(
   marital_hours,
   aes(x = reorder(marital_status, avg_hours), y = avg_hours)) +
@@ -1202,7 +1218,6 @@ ggplot(
     plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/bonus5.png", width = 8, height = 6)
 
 # rare & transit commutes
@@ -1211,7 +1226,6 @@ data %>%
   filter(tranwork %in% c(20, 39, 50)) %>%
   group_by(tranwork) %>%
   summarise(n = n())
-
 # occupations that use public transit most (bus/rail codes 31-37)
 data %>%
   filter(tranwork %in% c(31, 32, 33, 34, 35, 36, 37)) %>%
@@ -1228,7 +1242,6 @@ rare_commutes <- data %>%
     `50` = "Bicycle")) %>%
   group_by(mode) %>%
   summarise(commuters = sum(perwt), .groups = "drop")
-
 ggplot(
   rare_commutes,
   aes(x = reorder(mode, commuters), y = commuters)) +
@@ -1257,7 +1270,6 @@ ggplot(
     plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/bonus6a.png", width = 8, height = 6)
 
 transit_occ <- data %>%
@@ -1271,7 +1283,6 @@ transit_occ <- data %>%
   filter(n >= 100) %>%
   slice_max(pct_transit, n = 15, with_ties = FALSE) %>%
   mutate(occ_label = as.character(occ2010))
-
 ggplot(
   transit_occ,
   aes(x = reorder(occ_label, pct_transit), y = pct_transit)) +
@@ -1301,5 +1312,4 @@ ggplot(
     plot.title.position = "plot",
     plot.background = element_rect(fill = "white", color = NA),
     panel.background = element_rect(fill = "white", color = NA))
-
 ggsave("Results/bonus6b.png", width = 8, height = 6)
