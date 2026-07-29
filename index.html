@@ -173,11 +173,11 @@
 const AC = {
   intro:"--a-intro", book:"--a-book",
   health:"--a-health", education:"--a-education", econ:"--a-econ", immig:"--a-immig",
-  social:"--a-social", tech:"--a-tech", energy:"--a-energy", fun:"--a-fun"
+  tech:"--a-tech", energy:"--a-energy", fun:"--a-fun"
 };
 const AREA_NAME = {
   health:"Health", education:"Education", econ:"General economics", immig:"Immigration",
-  social:"Social policy", tech:"Technology", energy:"Energy / environment", fun:"Bonus"
+  tech:"Technology", energy:"Energy / environment", fun:"Bonus"
 };
 const S = [
 
@@ -194,17 +194,14 @@ const S = [
    housing, schooling, and how they get around. It is where numbers like the poverty rate, the uninsured
    rate, commute times, and where immigrants settle actually come from.</p>
    <p class="lede">Policy researchers lean on it constantly, because almost any question of the form
-   <i>&ldquo;how does X relate to Y, for group Z?&rdquo;</i> has an answer buried in it \u2014 including some
-   fairly ridiculous ones:</p>`},
+   <i>&ldquo;how does X relate to Y, for group Z?&rdquo;</i> has an answer buried in it. A few examples a policy
+   analyst might actually ask:</p>`},
    {pts:[
-     "What time do bartenders vs. farmers leave for work? And how many of them are carpooling?",
-     "How many art history majors are now managers? What percent of econ majors become lawyers? Does it differ by state?",
-     "How does the age gap between spouses affect their chances of separation? What about the number of children, or previous divorces?",
-     "How many people on Medicare have access to the internet? A refrigerator? A car?",
-     "Are couples who both commute 60+ minutes in opposite directions less likely to divorce than those who work from home?",
-     "How many people have more cars than people in their house? What do they do for work \u2014 and are they on welfare?",
-     "Do households with a stay-at-home mom or dad bring in more income? How does having a child change things?",
-     "Do veterans out-earn non-veterans in the same occupation?"]},
+     "How has the share of people without health insurance changed over the past decade?",
+     "Does personal income really rise with education \u2014 and by how much?",
+     "Which states have the largest foreign-born populations, and how fast are they growing?",
+     "How much more common is working from home now than before the pandemic?",
+     "What share of children live in families below the poverty line?"]},
    {h:`<div class="h3">And here's the kind of thing you can build</div>
      <p class="lede">Real charts made from ACS microdata:</p>
      <div class="figrow">
@@ -517,8 +514,9 @@ ggsave("results/medicaid_adults_vs_kids.png", width = 8, height = 5)`},
    {h:`<div class="h3">The many things you can add</div>
      <div class="note">Heads up: this example runs on a <b>different data pull</b> (a <span class="tok">medicaid2</span>
      table from a separate immigration project) \u2014 it's here to show the styling options, not to run on today's data.</div>
-     <p class="lede">Custom colours, a percent axis, a labelled reference line, titles and captions, and a full theme:</p>`},
-   {code:`ggplot(medicaid2, aes(x = as.numeric(year), y = medicaid_rate, color = group)) +
+     <p class="lede">Custom colours, a percent axis, a labelled reference line, titles and captions, and a full
+     theme produce the chart below. </p>`},
+   {codedrop:`ggplot(medicaid2, aes(x = as.numeric(year), y = medicaid_rate, color = group)) +
   geom_line(linewidth = 1.2) +
   geom_point(size = 2) +
   scale_color_manual(values = c(
@@ -567,30 +565,30 @@ ggsave("results/medicaid_adults_vs_kids.png", width = 8, height = 5)`},
 
 {sec:"index", area:"intro", tag:"All questions"},
 
-{sec:"q", area:"health", tag:"Uninsured, by state",
- q:"In 2024, what share of adults were uninsured, by state?",
- hint:"Filter to 2024 and to adults, then for each state take the average of an \u201cis uninsured\u201d test.",
- vars:["year","age","hcovany","statefip"],
+{sec:"q", area:"health", tag:"Uninsured over time",
+ q:"From 2016 to 2024, how has the uninsured rate changed?",
+ hint:"Take the average of an \u201cis uninsured\u201d test (hcovany == 1) among adults, grouped by year.",
+ vars:["year","age","hcovany"],
  sol:`uninsured <- data %>%
-  filter(year == 2024, age >= 18) %>%
-  group_by(statefip) %>%
+  filter(age >= 18) %>%
+  group_by(year) %>%
   summarise(pct = 100 * mean(hcovany == 1))   # hcovany 1 = no coverage
 
-ggplot(uninsured, aes(reorder(statefip, pct), pct)) +
-  geom_col(fill = "#3043B4") + coord_flip() +
+ggplot(uninsured, aes(year, pct)) +
+  geom_line(linewidth = 1, color = "#3043B4") + geom_point() +
   labs(x = NULL, y = "% uninsured")`},
-{sec:"q", area:"health", tag:"Kids on Medicaid/CHIP",
- q:"In 2024, what share of children were on Medicaid or CHIP, by state?",
- hint:"HINSCAID covers both Medicaid and CHIP. Filter to 2024 and children, then average a \u201chas Medicaid/CHIP\u201d test by state.",
+{sec:"q", area:"health", tag:"Kids on Medicaid: TX/CA/NY",
+ q:"From 2016 to 2024, what share of children were on Medicaid in Texas, California, and New York?",
+ hint:"Keep children in those three states (statefip 48, 6, 36), then take the Medicaid share grouped by year and state.",
  vars:["year","age","hinscaid","statefip"],
  sol:`kids <- data %>%
-  filter(year == 2024, age < 19) %>%
-  group_by(statefip) %>%
-  summarise(pct = 100 * mean(hinscaid == 2))   # hinscaid 2 = Medicaid/CHIP
+  filter(age < 19, statefip %in% c(48, 6, 36)) %>%   # 48 TX, 6 CA, 36 NY
+  group_by(year, statefip) %>%
+  summarise(pct = 100 * mean(hinscaid == 2), .groups = "drop")   # 2 = Medicaid/CHIP
 
-ggplot(kids, aes(reorder(statefip, pct), pct)) +
-  geom_col(fill = "#3043B4") + coord_flip() +
-  labs(x = NULL, y = "% of children on Medicaid/CHIP")`},
+ggplot(kids, aes(year, pct, color = factor(statefip))) +
+  geom_line(linewidth = 1) + geom_point() +
+  labs(x = NULL, y = "% of children on Medicaid", color = "State")`},
 {sec:"q", area:"health", tag:"Medicaid by employment",
  q:"In 2024, was Medicaid coverage higher for unemployed than employed adults?",
  hint:"Filter to 2024 and working-age adults, group by employment status, take the share on Medicaid in each.",
@@ -601,11 +599,11 @@ ggplot(kids, aes(reorder(statefip, pct), pct)) +
   summarise(pct_medicaid = 100 * mean(hinscaid == 2))`},
 
 {sec:"q", area:"education", tag:"Income by education",
- q:"In 2024, how did median personal income rise with education?",
+ q:"From 2016 to 2024, did median personal income rise with education?",
  hint:"Drop the N/A income code, then take a median within each education level.",
- vars:["year","inctot","educ"],
+ vars:["inctot","educ"],
  sol:`inc <- data %>%
-  filter(year == 2024, inctot != 9999999) %>%   # 9999999 = N/A
+  filter(inctot != 9999999) %>%   # 9999999 = N/A
   group_by(educ) %>%
   summarise(median_income = median(inctot))
 
@@ -613,25 +611,24 @@ ggplot(inc, aes(factor(educ), median_income)) +
   geom_col(fill = "#0D0E51") +
   labs(x = "Education level (educ code)", y = "Median personal income")`},
 {sec:"q", area:"education", tag:"Degrees by sex",
- q:"In 2024, did women or men aged 25+ hold degrees at a higher rate?",
+ q:"In 2024, did women or men aged 25+ hold college degrees at a higher rate?",
  hint:"\u201cBachelor\u2019s or higher\u201d is roughly educ \u2265 10. Filter to 2024 and adults 25+, then average that test by sex.",
  vars:["year","age","educ","sex"],
  sol:`data %>%
   filter(year == 2024, age >= 25) %>%
   group_by(sex) %>%              # 1 male, 2 female
   summarise(pct_ba = 100 * mean(educ >= 10))   # educ >= 10 ~ bachelor's+`},
-{sec:"q", area:"education", tag:"College completion over time",
- q:"Among adults 25\u201334, how did college completion change from 2016 to 2024?",
- hint:"Filter to the 25\u201334 band, then group by year to trace the trend.",
- vars:["year","age","educ"],
- sol:`grads <- data %>%
-  filter(age >= 25, age <= 34) %>%
-  group_by(year) %>%
-  summarise(pct_ba = 100 * mean(educ >= 10))
+{sec:"q", area:"education", tag:"Lawyers with econ degree",
+ q:"Among adults 25\u201334, how many lawyers have an economics degree?",
+ hint:"Lawyers are occ2010 == 2100. NOTE: identifying an economics degree needs DEGFIELD, which is not in the current extract \u2014 add it to the pull.",
+ vars:["age","occ2010","degfield"],
+ sol:`# NOTE: "economics degree" needs DEGFIELD, not in the current extract.
+data %>%
+  filter(age >= 25, age <= 34, occ2010 == 2100) %>%   # 2100 = lawyers, judges
+  summarise(n = n())
 
-ggplot(grads, aes(year, pct_ba)) +
-  geom_line(linewidth = 1, color = "#0D0E51") + geom_point() +
-  labs(x = NULL, y = "% with bachelor's+ (age 25-34)")`},
+# once DEGFIELD is added to the pull, filter it too:
+# filter(degfield == 54)   # 54 = economics`},
 
 {sec:"q", area:"econ", tag:"Wages over time",
  q:"From 2016 to 2024, how did median wage income change year by year?",
@@ -646,7 +643,7 @@ ggplot(wages, aes(year, median_wage)) +
   geom_line(linewidth = 1, color = "#1B7A4B") + geom_point() +
   labs(x = NULL, y = "Median wage income")`},
 {sec:"q", area:"econ", tag:"Employment over time",
- q:"From 2016 to 2024, how did the employment rate move \u2014 and how deep was the 2020 dip?",
+ q:"From 2016 to 2024, how did the employment rate change?",
  hint:"Filter to ages 18\u201364, group by year, take the share who are employed.",
  vars:["year","age","empstat"],
  sol:`emp <- data %>%
@@ -658,7 +655,7 @@ ggplot(emp, aes(year, pct_employed)) +
   geom_line(linewidth = 1, color = "#1B7A4B") + geom_point() +
   labs(x = NULL, y = "% employed (age 18-64)")`},
 {sec:"q", area:"econ", tag:"Work hours by sex",
- q:"In 2024, how big was the gap in weekly hours worked between men and women?",
+ q:"In 2024, how big was the gap in average weekly hours worked between men and women?",
  hint:"Keep people who report hours (> 0), group by sex, average usual hours worked.",
  vars:["year","uhrswork","sex"],
  sol:`data %>%
@@ -684,9 +681,9 @@ ggplot(emp, aes(year, pct_employed)) +
   summarise(avg_hours = mean(uhrswork)) %>%
   arrange(desc(avg_hours))`},
 {sec:"q", area:"econ", tag:"Family income by state",
- q:"In 2024, how did median family income differ across states?",
- hint:"Drop the N/A family-income code, take a median within each state.",
- vars:["year","ftotinc","statefip"],
+ q:"In 2024, how did median family income differ across states? How does adding a child or two change things?",
+ hint:"Drop the N/A family-income code, take a median within each state. NOTE: comparing by number of children needs a children-count variable (e.g. NCHILD) not in the current extract.",
+ vars:["year","ftotinc","statefip","nchild"],
  sol:`fam <- data %>%
   filter(year == 2024, ftotinc != 9999999) %>%
   group_by(statefip) %>%
@@ -694,65 +691,52 @@ ggplot(emp, aes(year, pct_employed)) +
 
 ggplot(fam, aes(reorder(statefip, median_family_income), median_family_income)) +
   geom_col(fill = "#1B7A4B") + coord_flip() +
-  labs(x = NULL, y = "Median family income")`},
+  labs(x = NULL, y = "Median family income")
 
-{sec:"q", area:"immig", tag:"Foreign-born by state",
- q:"In 2024, what share of each state's population was foreign-born?",
- hint:"Birthplace codes below 100 are U.S.; 100+ are foreign. Average a \u201cborn abroad\u201d test by state.",
- vars:["year","bpl","statefip"],
- sol:`fb <- data %>%
-  filter(year == 2024) %>%
-  group_by(statefip) %>%
-  summarise(pct = 100 * mean(bpl >= 100))   # bpl >= 100 = foreign-born
+# to see how children change things, add NCHILD to the pull and group_by(nchild)`},
+{sec:"q", area:"econ", tag:"Poverty: 1- vs 2-parent",
+ q:"In 2024, what share of single-parent vs. two-parent households lived below the poverty line?",
+ hint:"POVERTY is income as a % of the poverty line (below = under 100). NOTE: splitting single- vs two-parent households needs a family-structure variable not in the current extract.",
+ vars:["year","poverty"],
+ sol:`# NOTE: the single- vs two-parent split needs a household-structure variable
+# (e.g. NMOTHERS / NFATHERS, or a family-type flag) that isn't in this extract.
+# The poverty side, once household_type can be built, looks like:
+data %>%
+  filter(year == 2024, poverty > 0) %>%     # 0 = N/A
+  group_by(household_type) %>%              # <- build from a structure variable
+  summarise(pct_poverty = 100 * mean(poverty < 100))`},
 
-ggplot(fb, aes(reorder(statefip, pct), pct)) +
-  geom_col(fill = "#B23A48") + coord_flip() +
-  labs(x = NULL, y = "% foreign-born")`},
-{sec:"q", area:"immig", tag:"Naturalization by arrival",
- q:"In 2024, did immigrants who arrived longer ago naturalize at higher rates?",
- hint:"Keep the foreign-born with a valid arrival year, group by decade of arrival, take the naturalized share.",
- vars:["year","bpl","citizen","yrimmig"],
- sol:`data %>%
-  filter(year == 2024, bpl >= 100, yrimmig > 0) %>%
-  group_by(decade = floor(yrimmig / 10) * 10) %>%   # arrival decade
-  summarise(pct_naturalized = 100 * mean(citizen == 2))   # 2 = naturalized`},
 {sec:"q", area:"immig", tag:"Foreign-born over time",
- q:"From 2016 to 2024, how did the foreign-born share change?",
- hint:"Same \u201cborn abroad\u201d test, grouped by year.",
+ q:"From 2016 to 2024, what share of the population was foreign-born?",
+ hint:"Take the \u201cborn abroad\u201d test (bpl >= 100), grouped by year.",
  vars:["year","bpl"],
  sol:`trend <- data %>%
   group_by(year) %>%
-  summarise(pct = 100 * mean(bpl >= 100))
+  summarise(pct = 100 * mean(bpl >= 100))   # bpl >= 100 = foreign-born
 
 ggplot(trend, aes(year, pct)) +
   geom_line(linewidth = 1, color = "#B23A48") + geom_point() +
   labs(x = NULL, y = "% foreign-born")`},
+{sec:"q", area:"immig", tag:"Immigrant arrival & income",
+ q:"In 2024, did noncitizens who arrived in 1999 or earlier earn more than those who arrived in 2000 or later?",
+ hint:"Keep noncitizens (citizen == 3) with a valid arrival year and income, then group by whether they arrived in 1999 or earlier vs 2000 or later.",
+ vars:["year","citizen","yrimmig","inctot"],
+ sol:`data %>%
+  filter(year == 2024, citizen == 3, yrimmig > 0, inctot != 9999999) %>%   # 3 = not a citizen
+  group_by(arrived = if_else(yrimmig <= 1999, "1999 or earlier", "2000 or later")) %>%
+  summarise(median_income = median(inctot))`},
+{sec:"q", area:"immig", tag:"Naturalized over time",
+ q:"From 2016 to 2024, what percent of the foreign-born population were naturalized citizens?",
+ hint:"Keep the foreign-born (bpl >= 100), then take the naturalized share (citizen == 2) grouped by year.",
+ vars:["year","bpl","citizen"],
+ sol:`nat <- data %>%
+  filter(bpl >= 100) %>%
+  group_by(year) %>%
+  summarise(pct = 100 * mean(citizen == 2))   # 2 = naturalized
 
-{sec:"q", area:"social", tag:"Kids in low-income families",
- q:"In 2024, what share of children lived in lower-income families, by state?",
- hint:"Keep 2024 children with a valid family income, then average a rough \u201cbelow $30k\u201d test by state. (A proper poverty measure would use the POVERTY variable \u2014 see the next question.)",
- vars:["year","age","ftotinc","statefip"],
- sol:`lowinc <- data %>%
-  filter(year == 2024, age < 18, ftotinc != 9999999) %>%
-  group_by(statefip) %>%
-  summarise(pct_low = 100 * mean(ftotinc < 30000))   # rough low-income cutoff
-
-ggplot(lowinc, aes(reorder(statefip, pct_low), pct_low)) +
-  geom_col(fill = "#8A5A2B") + coord_flip() +
-  labs(x = NULL, y = "% of children in families under $30k")`},
-{sec:"q", area:"social", tag:"Poverty by state",
- q:"In 2024, what share of people lived below the poverty line, by state?",
- hint:"POVERTY is income as a % of the poverty threshold (below the line = under 100). NOTE: this variable is NOT in the current extract \u2014 add it to the IPUMS pull to run this.",
- vars:["year","poverty","statefip"],
- sol:`# NOTE: requires adding POVERTY to the IPUMS extract (not in the current pull)
-pov <- data %>%
-  filter(year == 2024, poverty > 0) %>%   # 0 = N/A
-  group_by(statefip) %>%
-  summarise(pct = 100 * mean(poverty < 100))   # < 100% of poverty line
-
-ggplot(pov, aes(reorder(statefip, pct), pct)) +
-  geom_col(fill = "#8A5A2B") + coord_flip() +
-  labs(x = NULL, y = "% below poverty line")`},
+ggplot(nat, aes(year, pct)) +
+  geom_line(linewidth = 1, color = "#B23A48") + geom_point() +
+  labs(x = NULL, y = "% naturalized")`},
 
 {sec:"q", area:"tech", tag:"Smartphones by state",
  q:"In 2024, what share of households had a smartphone, by state?",
@@ -811,34 +795,34 @@ ggplot(commute, aes(reorder(tranwork, n), n)) +
 ggplot(elec, aes(reorder(statefip, avg_bill), avg_bill)) +
   geom_col(fill = "#0E7C86") + coord_flip() +
   labs(x = NULL, y = "Avg annual electricity cost ($)")`},
-{sec:"q", area:"energy", tag:"Work from home & COVID",
- q:"How did working from home change across 2019, 2021, and 2024?",
- hint:"\u201cWorked at home\u201d is a commute-mode category (80). Keep those three years and average a \u201cworked at home\u201d test by year.",
+{sec:"q", area:"energy", tag:"Work from home over time",
+ q:"How did working from home change from 2016 to 2024?",
+ hint:"\u201cWorked at home\u201d is commute-mode 80. Average that test grouped by year.",
  vars:["year","tranwork"],
  sol:`wfh <- data %>%
-  filter(year %in% c(2019, 2021, 2024), tranwork > 0) %>%
+  filter(tranwork > 0) %>%
   group_by(year) %>%
   summarise(pct_wfh = 100 * mean(tranwork == 80))   # 80 = worked at home
 
-ggplot(wfh, aes(factor(year), pct_wfh)) +
-  geom_col(fill = "#0E7C86") +
+ggplot(wfh, aes(year, pct_wfh)) +
+  geom_line(linewidth = 1, color = "#0E7C86") + geom_point() +
   labs(x = NULL, y = "% working from home")`},
 
 {sec:"q", area:"fun", tag:"Earliest to work",
- q:"In 2024, which occupations left for work the earliest?",
+ q:"Which occupations leave for work the earliest?",
  hint:"DEPARTS is a 24-hour clock (0600 = 6 a.m.). Keep commuters, average departure time by occupation, sort. (Bakers win.)",
- vars:["year","occ2010","departs"],
+ vars:["occ2010","departs"],
  sol:`data %>%
-  filter(year == 2024, departs > 0) %>%
+  filter(departs > 0) %>%
   group_by(occ2010) %>%
   summarise(avg_departs = mean(departs)) %>%
   arrange(avg_departs)     # earliest risers first`},
 {sec:"q", area:"fun", tag:"Night-shift states",
- q:"In 2024, which states had the most workers leaving before 5 a.m.?",
+ q:"Which states have the most workers leaving before 5 a.m.?",
  hint:"Keep commuters with a real departure time, then average a \u201cleft before 0500\u201d test by state.",
- vars:["year","departs","statefip"],
+ vars:["departs","statefip"],
  sol:`night <- data %>%
-  filter(year == 2024, departs > 0) %>%
+  filter(departs > 0) %>%
   group_by(statefip) %>%
   summarise(pct = 100 * mean(departs < 500))   # before 5:00 a.m.
 
@@ -846,11 +830,11 @@ ggplot(night, aes(reorder(statefip, pct), pct)) +
   geom_col(fill = "#C97703") + coord_flip() +
   labs(x = NULL, y = "% leaving before 5 a.m.")`},
 {sec:"q", area:"fun", tag:"Does WFH pay?",
- q:"In 2024, did people who worked from home out-earn commuters?",
+ q:"Do people who work from home out-earn commuters?",
  hint:"Group by whether the commute mode was \u201cworked at home\u201d (80), compare median wage income.",
- vars:["year","tranwork","incwage"],
+ vars:["tranwork","incwage"],
  sol:`data %>%
-  filter(year == 2024, incwage > 0, incwage != 999999) %>%
+  filter(incwage > 0, incwage != 999999) %>%
   group_by(wfh = tranwork == 80) %>%   # TRUE = worked at home
   summarise(median_wage = median(incwage))`},
 {sec:"q", area:"fun", tag:"Overqualified paycheck",
@@ -863,30 +847,29 @@ ggplot(night, aes(reorder(statefip, pct), pct)) +
   summarise(median_wage = median(incwage)) %>%
   arrange(desc(median_wage))`},
 {sec:"q", area:"fun", tag:"Hours by marital status",
- q:"In 2024, how did weekly hours worked differ by marital status?",
+ q:"How do weekly hours worked differ by marital status?",
  hint:"Keep people who report hours, group by marital status, average usual hours worked.",
- vars:["year","marst","uhrswork"],
+ vars:["marst","uhrswork"],
  sol:`data %>%
-  filter(year == 2024, uhrswork > 0) %>%
+  filter(uhrswork > 0) %>%
   group_by(marst) %>%       # marital status
   summarise(avg_hours = mean(uhrswork))`},
-{sec:"q", area:"fun", tag:"Rare commutes",
- q:"How many people commute by ferry, bike, or motorcycle \u2014 and is it growing?",
- hint:"Keep commuters, then count each transport mode by year to watch the unusual ones (ferry 39, bicycle 50, motorcycle 20) rise or fall.",
- vars:["year","tranwork"],
- sol:`data %>%
-  filter(tranwork > 0) %>%
-  group_by(year, tranwork) %>%
-  summarise(n = n(), .groups = "drop")   # look at codes 20, 39, 50`},
-{sec:"q", area:"fun", tag:"Latest to work",
- q:"In 2024, which occupations arrived at work the latest?",
- hint:"ARRIVES is the clock time people reach work. Average it by occupation and sort descending. (Bartenders, artists...)",
- vars:["year","occ2010","arrives"],
- sol:`data %>%
-  filter(year == 2024, arrives > 0) %>%
+{sec:"q", area:"fun", tag:"Rare & transit commutes",
+ q:"How many people commute by ferry, bike, or motorcycle? Which occupations have more public transport users?",
+ hint:"Count the rare modes (motorcycle 20, ferry 39, bicycle 50). For the second part, keep public-transit commuters (codes 31\u201337) and count by occupation.",
+ vars:["tranwork","occ2010"],
+ sol:`# rare modes: 20 motorcycle, 39 ferry, 50 bicycle
+data %>%
+  filter(tranwork %in% c(20, 39, 50)) %>%
+  group_by(tranwork) %>%
+  summarise(n = n())
+
+# occupations that use public transit most (bus/rail codes 31-37)
+data %>%
+  filter(tranwork %in% c(31, 32, 33, 34, 35, 36, 37)) %>%
   group_by(occ2010) %>%
-  summarise(avg_arrival = mean(arrives)) %>%
-  arrange(desc(avg_arrival))`},
+  summarise(n = n()) %>%
+  arrange(desc(n))`},
 
 ];
 
@@ -950,6 +933,7 @@ function render(){
         if(b.h)html+=b.h;
         if(b.pts)html+='<ul class="pts">'+b.pts.map(p=>'<li>'+p+'</li>').join('')+'</ul>';
         if(b.code)html+=codeBlock(b.code);
+        if(b.codedrop)html+='<details class="sol"><summary><span class="tag">Code</span><span class="arrow">\u203a</span></summary><div class="rb">'+codeBlock(b.codedrop,'analysis.R')+'</div></details>';
       });
     }
   }
