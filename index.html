@@ -91,6 +91,14 @@
   table.codes tr.grp td{font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);border-bottom:none;padding-top:11px;font-weight:600}
   .vdef{font-size:14px;margin:2px 0 0;max-width:64ch}
 
+  table.cb{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  table.cb th{text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--ink);padding:8px 10px}
+  table.cb td{border-bottom:1px solid var(--rule);padding:8px 10px}
+  table.cb td.v{font-family:var(--mono);font-weight:600}
+  table.cb th.num{text-align:right}
+  table.cb td.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .cap{font-size:12.5px;color:var(--muted);margin:4px 0 0}
+
   .qgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-top:12px}
   .qcard{text-align:left;border:1.5px solid var(--rule);border-radius:10px;background:var(--panel);padding:12px 13px;cursor:pointer;font:inherit;color:inherit}
   .qcard:hover{border-color:var(--qa,var(--ink));transform:translateY(-1px)}
@@ -212,20 +220,10 @@ const S = [
      "<b>filter</b> \u2014 which people? (adults, one year, workers...)",
      "<b>group_by</b> \u2014 compare across what? (states, years, education...)",
      "<b>summarise</b> \u2014 what number? (a count, a share, a median...)"]},
-   {h:`<div class="h3">Worked example: how many adults were on Medicaid?</div>`},
-   {code:`# In 2024: filter to the people we want, then count them
-data %>%
-  filter(year == 2024, age >= 18, hinscaid == 2) %>%   # hinscaid 2 = Medicaid/CHIP
-  summarise(n = n())
-
-# For every year: group_by(year) first, then count within each
-medicaid_by_year <- data %>%
-  filter(age >= 18, hinscaid == 2) %>%
-  group_by(year) %>%
-  summarise(n = n())
-
-# print the whole table (n = Inf shows every row)
-print(medicaid_by_year, n = Inf)`}]},
+   {h:`<p class="lede">Take a real one: <b>how many adults were on Medicaid?</b> We <b>filter</b> to adults
+     who are on Medicaid, then <b>summarise</b> by counting them. Want it for every year? Add a
+     <b>group_by(year)</b> in the middle and the count comes back once per year. That's the whole pattern \u2014
+     we'll write the actual code once we're set up.</p>`}]},
 
 {sec:"intro", area:"intro", tag:"Set up", kick:"Intro", q:"Set up your workspace",
  blocks:[
@@ -277,12 +275,7 @@ count(data, sex)
 count(data, hinscaid)
 # how many rows per state
 count(data, statefip)`},
-   {h:`<div class="h3">The pipe: %>%</div>
-     <p class="lede">The pipe passes the thing on its left into the function on its right \u2014 read it as
-     &ldquo;and then.&rdquo; These two lines are identical: <span class="tok">count(data, sex)</span> is the same as
-     <span class="tok">data %>% count(sex)</span>, i.e. &ldquo;take data, and then count by sex.&rdquo; Pipes let you
-     chain steps in the order you'd read them.</p>
-     <div class="h3">table() vs count()</div>
+   {h:`<div class="h3">table() vs count()</div>
      <p class="lede">Both tally categories, but they're different tools. <span class="tok">table()</span> is base R
      and returns a grid; <span class="tok">count()</span> is from the tidyverse and returns a tidy data frame with a
      count column named <span class="tok">n</span>.</p>`},
@@ -301,6 +294,12 @@ count(data, year, marst)`},
 
 mean(data$age)         # average age
 median(data$inctot)    # the middle income`},
+   {h:`<div class="h3">Saving a table</div>
+     <p class="lede">Once you've made a summary table, <span class="tok">write_csv()</span> saves it to a file \u2014
+     the mirror image of <span class="tok">read_csv()</span>:</p>`},
+   {code:`# make a table, then save it to your results folder
+state_counts <- count(data, statefip)
+write_csv(state_counts, "results/state_counts.csv")`},
    {h:`<div class="note"><b>Remember:</b> the ACS surveys a fraction of the country.
      The unweighted count is how many <b>survey responses</b>. The weighted count is how many <b>Americans</b>.</div>`}]},
 
@@ -308,7 +307,13 @@ median(data$inctot)    # the middle income`},
  blocks:[
    {h:`<p class="lede">Each function does one job. When working with data, we save results as new objects with
      <span class="tok">&lt;-</span>, then build on them step by step.</p>
-     <div class="h3" style="border-top:none;padding-top:0;margin-top:8px">filter() \u2014 pick rows</div>
+     <div class="h3" style="border-top:none;padding-top:0;margin-top:8px">The pipe: %>%</div>
+     <p class="lede">The pipe passes the thing on its left into the function on its right \u2014 read it as
+     &ldquo;and then.&rdquo; These two lines are identical, i.e. &ldquo;take data, and then count by sex.&rdquo;
+     Pipes let you chain steps in the order you'd read them.</p>`},
+   {code:`count(data, sex)        # count 'sex' in 'data'
+data %>% count(sex)     # take 'data' AND THEN count by 'sex'`},
+   {h:`<div class="h3">filter() \u2014 pick rows</div>
      <p class="lede">Keeps rows that pass a test. Commas mean <i>and</i>.
      <span class="tok">==</span> equals, <span class="tok">&gt;=</span> at least,
      <span class="tok">&lt;</span> less than, <span class="tok">%in%</span> is one of.</p>`},
@@ -316,7 +321,10 @@ median(data$inctot)    # the middle income`},
 adults      <- data %>% filter(age >= 18)
 workers_24  <- data %>% filter(year == 2024, empstat == 1)   # employed in 2024
 immigrants  <- data %>% filter(bpl >= 100)                   # born abroad
-young_grads <- data %>% filter(age >= 25, age <= 34, educ >= 10)`},
+young_grads <- data %>% filter(age >= 25, age <= 34, educ >= 10)
+
+# %in% keeps rows matching ANY value in a set -- here, all public-transit commuters
+transit <- data %>% filter(tranwork %in% c(31, 32, 33, 34, 35, 36, 37))`},
    {h:`<div class="h3">group_by() + summarise() \u2014 one number per group</div>
      <p class="lede">group_by draws invisible dividers; summarise collapses each group to a single row.
      Useful summaries: <span class="tok">n()</span> counts rows, plus
@@ -328,7 +336,12 @@ income_by_educ <- data %>%
   summarise(median_income = median(inctot))
 
 income_by_educ        # print the result to look at it`},
-   {h:`<div class="h3">The share trick</div>
+   {h:`<p class="lede">Inside <span class="tok">summarise()</span> you can use any function that turns many
+     numbers into one: <span class="tok">n()</span> counts rows, and
+     <span class="tok">sum()</span>, <span class="tok">mean()</span>, <span class="tok">median()</span>,
+     <span class="tok">min()</span>, <span class="tok">max()</span>, and <span class="tok">sd()</span>
+     each summarise a column.</p>
+     <div class="h3">The share trick</div>
      <p class="lede">The mean of a TRUE/FALSE test is a proportion \u2014 times 100 gives a percent.
      Here we build on the <span class="tok">adults</span> object we made above.</p>`},
    {code:`# share of adults uninsured, by state
@@ -341,13 +354,27 @@ uninsured_by_state %>% arrange(desc(pct))`},
    {h:`<div class="h3">Seeing every row</div>
      <p class="lede">By default R prints only the first 10 rows of a big table. A state table has 50+ rows \u2014
      print them all with <span class="tok">n = Inf</span>:</p>`},
-   {code:`print(uninsured_by_state, n = Inf)`}]},
+   {code:`print(uninsured_by_state, n = Inf)`},
+   {h:`<div class="h3">Putting it together: adults on Medicaid</div>
+     <p class="lede">The example from the start of the lab \u2014 filter, then count; add group_by(year) for a trend:</p>`},
+   {code:`# In 2024: how many adults were on Medicaid?
+data %>%
+  filter(year == 2024, age >= 18, hinscaid == 2) %>%   # hinscaid 2 = Medicaid/CHIP
+  summarise(n = n())
+
+# For every year: group_by(year) first, then count within each
+medicaid_by_year <- data %>%
+  filter(age >= 18, hinscaid == 2) %>%
+  group_by(year) %>%
+  summarise(n = n())
+
+print(medicaid_by_year, n = Inf)`}]},
 
 {sec:"intro", area:"intro", tag:"Weights (optional)", kick:"Intro", q:"Optional: working with the weights",
  blocks:[
    {h:`<p class="lede">We probably won't get to this today \u2014 but it's here for anyone curious.
      The ACS is a <b>sample</b>. Each row carries a weight, <span class="tok">perwt</span>: how many people
-     that single response stands for. Counting rows with <span class="tok">n()</span> gives survey
+     that single response represents in America. Counting rows with <span class="tok">n()</span> gives survey
      responses; summing <span class="tok">perwt</span> estimates the real <b>population</b>.</p>`},
    {code:`# immigrant status counts
 immig_counts = acsdata %>%
@@ -358,15 +385,19 @@ immig_counts = acsdata %>%
   ungroup()`},
    {h:`<p class="lede"><span class="tok">n</span> is survey responses; <span class="tok">population</span>
      is the weighted estimate of Americans \u2014 look at the size difference.</p>
-     <table class="cb"><tr><th>year</th><th>immig_status</th><th>n</th><th>population</th></tr>
-     <tr><td class="v">2010</td><td>Legal noncitizen</td><td>93,941</td><td>10,756,952</td></tr>
-     <tr><td class="v">2010</td><td>Native-born</td><td>2,713,754</td><td>269,433,948</td></tr>
-     <tr><td class="v">2010</td><td>Naturalized citizen</td><td>169,013</td><td>17,456,312</td></tr>
-     <tr><td class="v">2010</td><td>Undocumented</td><td>84,984</td><td>12,492,486</td></tr>
-     <tr><td class="v">2011</td><td>Legal noncitizen</td><td>94,160</td><td>10,864,332</td></tr>
-     <tr><td class="v">2011</td><td>Native-born</td><td>2,762,863</td><td>271,211,679</td></tr>
-     <tr><td class="v">2011</td><td>Naturalized citizen</td><td>172,015</td><td>18,156,038</td></tr>
-     <tr><td class="v">2011</td><td>Undocumented</td><td>82,979</td><td>12,098,662</td></tr>
+     <table class="cb"><tr><th>year</th><th>immig_status</th><th class="num">n</th><th class="num">population</th></tr>
+     <tr><td class="v">2010</td><td>Legal noncitizen</td><td class="num">93,941</td><td class="num">10,756,952</td></tr>
+     <tr><td class="v">2010</td><td>Native-born</td><td class="num">2,713,754</td><td class="num">269,433,948</td></tr>
+     <tr><td class="v">2010</td><td>Naturalized citizen</td><td class="num">169,013</td><td class="num">17,456,312</td></tr>
+     <tr><td class="v">2010</td><td>Undocumented</td><td class="num">84,984</td><td class="num">12,492,486</td></tr>
+     <tr><td class="v">2011</td><td>Legal noncitizen</td><td class="num">94,160</td><td class="num">10,864,332</td></tr>
+     <tr><td class="v">2011</td><td>Native-born</td><td class="num">2,762,863</td><td class="num">271,211,679</td></tr>
+     <tr><td class="v">2011</td><td>Naturalized citizen</td><td class="num">172,015</td><td class="num">18,156,038</td></tr>
+     <tr><td class="v">2011</td><td>Undocumented</td><td class="num">82,979</td><td class="num">12,098,662</td></tr>
+     <tr><td class="v">2012</td><td>Legal noncitizen</td><td class="num">95,161</td><td class="num">10,994,147</td></tr>
+     <tr><td class="v">2012</td><td>Native-born</td><td class="num">2,758,907</td><td class="num">273,177,026</td></tr>
+     <tr><td class="v">2012</td><td>Naturalized citizen</td><td class="num">177,698</td><td class="num">18,623,243</td></tr>
+     <tr><td class="v">2012</td><td>Undocumented</td><td class="num">81,264</td><td class="num">11,822,517</td></tr>
      </table>
      <p class="cap">... and so on for each year through 2024.</p>
      <div class="h3">How the Census builds the weights</div>
@@ -390,11 +421,99 @@ immig_counts = acsdata %>%
      <span class="tok">geom_line()</span> + <span class="tok">geom_point()</span> for trends,
      <span class="tok">geom_histogram()</span> for a distribution, <span class="tok">geom_boxplot()</span> for spread.</p>
      <div class="h3">The basics</div>`},
-   {code:`# bars -- compare categories
-ggplot(result, aes(x = statefip, y = pct)) + geom_col()
+   {code:`# a real example: build a summary table from our data first
+medicaid_by_year <- data %>%
+  filter(age >= 18, hinscaid == 2) %>%
+  group_by(year) %>%
+  summarise(n = n())
 
 # lines -- a trend over time
-ggplot(result, aes(x = year, y = pct)) + geom_line() + geom_point()`},
+ggplot(medicaid_by_year, aes(x = year, y = n)) +
+  geom_line() + geom_point()
+
+# bars -- the same numbers as columns
+ggplot(medicaid_by_year, aes(x = factor(year), y = n)) +
+  geom_col()`},
+   {h:`<div class="h3">A prettier version (Cato style)</div>
+     <p class="lede">Now <b>weighted</b> to a population estimate (sum <span class="tok">perwt</span>), dressed up with a
+     custom colour, a comma axis, titles, and a theme \u2014 then saved to a file with
+     <span class="tok">ggsave()</span>:</p>`},
+   {code:`# weighted this time: sum perwt for a population estimate
+medicaid_wt <- data %>%
+  filter(age >= 18, hinscaid == 2) %>%
+  group_by(year) %>%
+  summarise(population = sum(perwt))
+
+ggplot(medicaid_wt, aes(x = as.numeric(year), y = population)) +
+  geom_line(linewidth = 1.2, color = "#3043B4") +
+  geom_point(size = 2, color = "#3043B4") +
+  scale_x_continuous(breaks = seq(2016, 2024, by = 2), expand = c(0.02, 0)) +
+  scale_y_continuous(labels = scales::comma, expand = c(0.02, 0)) +
+  labs(
+    title = "Adults on Medicaid, 2016-2024",
+    subtitle = "Weighted population estimate (ACS)",
+    x = NULL, y = NULL,
+    caption = "Source: ACS PUMS via IPUMS") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold", hjust = 0, color = "black"),
+    plot.subtitle = element_text(size = 11, color = "gray40", hjust = 0, margin = margin(b = 12)),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_line(color = "gray90", linewidth = 0.5),
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text = element_text(size = 10, color = "gray40"),
+    plot.caption = element_text(size = 8, color = "gray40", hjust = 0),
+    plot.caption.position = "plot",
+    plot.title.position = "plot",
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA))
+
+ggsave("results/medicaid_adults.png", width = 8, height = 5)`},
+   {h:`<div class="h3">Splitting adults vs. kids</div>
+     <p class="lede">Add a group column, map it to <span class="tok">color</span>, and set the two colours by
+     hand \u2014 adults blue, kids orange:</p>`},
+   {code:`# one row per year per group
+medicaid_grp <- data %>%
+  filter(hinscaid == 2) %>%
+  group_by(year, group = if_else(age < 19, "Kids", "Adults")) %>%
+  summarise(n = n(), .groups = "drop")
+
+ggplot(medicaid_grp, aes(x = as.numeric(year), y = n, color = group)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 2) +
+  scale_color_manual(values = c(
+    "Adults" = "#3043B4",
+    "Kids"   = "#C97703")) +
+  scale_x_continuous(breaks = seq(2016, 2024, by = 2), expand = c(0.02, 0)) +
+  scale_y_continuous(labels = scales::comma, expand = c(0.02, 0)) +
+  labs(
+    title = "On Medicaid: Adults vs. Kids (2016-2024)",
+    subtitle = "ACS sample counts",
+    x = NULL, y = NULL, color = NULL,
+    caption = "Source: ACS PUMS via IPUMS") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold", hjust = 0, color = "black"),
+    plot.subtitle = element_text(size = 11, color = "gray40", hjust = 0, margin = margin(b = 12)),
+    legend.position = "top",
+    legend.justification = "left",
+    legend.text = element_text(size = 10),
+    legend.key.width = unit(1.5, "cm"),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_line(color = "gray90", linewidth = 0.5),
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text = element_text(size = 10, color = "gray40"),
+    plot.caption = element_text(size = 8, color = "gray40", hjust = 0),
+    plot.caption.position = "plot",
+    plot.title.position = "plot",
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA))
+
+ggsave("results/medicaid_adults_vs_kids.png", width = 8, height = 5)`},
    {h:`<div class="h3">The many things you can add</div>
      <div class="note">Heads up: this example runs on a <b>different data pull</b> (a <span class="tok">medicaid2</span>
      table from a separate immigration project) \u2014 it's here to show the styling options, not to run on today's data.</div>
