@@ -1,0 +1,816 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cato Intern Coding Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F4F5F3; --panel:#FBFBF9; --ink:#14161F; --muted:#5B6070; --rule:#DCDDD6;
+    --a-intro:#3A3D49; --a-book:#4A4030;
+    --a-health:#3043B4; --a-education:#0D0E51; --a-econ:#1B7A4B; --a-immig:#B23A48;
+    --a-social:#8A5A2B; --a-tech:#6D3FA3; --a-energy:#0E7C86; --a-fun:#C97703;
+    --display:"Space Grotesk",system-ui,sans-serif;
+    --body:"IBM Plex Sans",system-ui,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+    --sidebar:260px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.5;-webkit-font-smoothing:antialiased}
+
+  /* ---- sidebar ---- */
+  .side{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar);background:var(--panel);border-right:2px solid var(--ink);overflow-y:auto;z-index:10;padding:22px 0 30px}
+  .side .brand{font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:-.01em;padding:0 20px 4px}
+  .side .brandsub{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:0 20px 18px;border-bottom:1px solid var(--rule);margin-bottom:10px}
+  .side .sec{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding:16px 20px 6px;font-weight:600}
+  .side a{display:flex;gap:9px;align-items:center;padding:6px 20px;font-size:13.5px;color:var(--ink);text-decoration:none;cursor:pointer;border-left:3px solid transparent}
+  .side a:hover{background:#EFEFE9}
+  .side a.on{border-left-color:var(--ac,var(--ink));background:#EDEEE8;font-weight:600;color:var(--ac,var(--ink))}
+  .side a .dot{width:9px;height:9px;border-radius:2px;background:var(--ac,var(--muted));flex:none}
+
+  /* ---- main ---- */
+  .main{margin-left:var(--sidebar);min-height:100vh;display:flex;flex-direction:column}
+  .wrap{position:relative;max-width:900px;width:100%;margin:0 auto;padding:30px 34px 130px;flex:1 0 auto}
+  .topbar{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--ink);padding-bottom:9px;margin-bottom:30px}
+  .mark{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .obs{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;color:var(--muted)}
+  .menubtn{display:none}
+
+  .slide{animation:rise .3s ease both}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){.slide{animation:none}}
+
+  .eyebrow{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;margin-bottom:16px;color:var(--area,var(--ink))}
+  .eyebrow .box{width:15px;height:15px;border:2px solid var(--area,var(--ink));border-radius:3px;display:inline-flex;align-items:center;justify-content:center;font-size:11px}
+  .eyebrow .chip{width:32px;height:8px;border-radius:2px;background:var(--area,var(--ink));margin-left:auto}
+  .kick{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--area,var(--ink));margin-bottom:14px}
+
+  h1.q{font-family:var(--display);font-weight:600;font-size:clamp(23px,3.9vw,35px);line-height:1.15;letter-spacing:-.015em;margin:0 0 22px;padding-left:16px;border-left:5px solid var(--area,var(--ink))}
+  .hero{font-family:var(--display);font-weight:700;font-size:clamp(34px,6vw,58px);line-height:1.05;letter-spacing:-.02em;margin:8px 0 14px}
+  .hero-sub{font-size:clamp(17px,2.4vw,22px);color:var(--muted);max-width:30ch;margin-bottom:26px;font-weight:400}
+  .lede{font-size:16px;max-width:64ch}
+  .lede p{margin:0 0 14px}
+  b,strong{font-weight:600}
+  .tok{font-family:var(--mono);font-size:.85em;background:#E9EAE4;padding:1px 6px;border-radius:4px;white-space:nowrap}
+  .kbd{font-family:var(--mono);font-size:12px;border:1px solid var(--rule);border-bottom-width:2px;border-radius:5px;padding:2px 7px;background:var(--panel)}
+
+  .h3{font-family:var(--display);font-weight:600;font-size:19px;margin:26px 0 10px;padding-top:20px;border-top:1px solid var(--rule)}
+  .note{background:var(--panel);border:1.5px solid var(--rule);border-left:4px solid var(--area,var(--ink));border-radius:8px;padding:13px 16px;font-size:14.5px;margin:18px 0;max-width:64ch}
+  .note b{color:var(--area,var(--ink))}
+
+  ul.pts{padding-left:0;list-style:none;max-width:64ch;margin:6px 0}
+  ul.pts li{padding:8px 0 8px 26px;position:relative;font-size:15.5px;border-bottom:1px solid var(--rule)}
+  ul.pts li::before{content:"";position:absolute;left:2px;top:15px;width:9px;height:9px;background:var(--area,var(--ink));border-radius:2px}
+
+  /* code console */
+  .code{background:#14161F;border-radius:10px;margin:14px 0;position:relative;max-width:100%}
+  .code .bar{display:flex;align-items:center;gap:7px;padding:9px 13px;border-bottom:1px solid #2A2D3A}
+  .code .bar .d{width:10px;height:10px;border-radius:50%}
+  .d1{background:#E06C5B}.d2{background:#E0B24E}.d3{background:#5BAE7A}
+  .code .bar .lbl{margin-left:6px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#8891A6}
+  .code pre{margin:0;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:13px;line-height:1.62;color:#EDEEF2;tab-size:2}
+  .copy{position:absolute;top:8px;right:9px;font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#8891A6;background:#242736;border:1px solid #333747;border-radius:6px;padding:5px 9px;cursor:pointer}
+  .copy:hover{color:#EDEEF2}.copy.done{color:#5BAE7A}
+  .cm{color:#7C8AA5;font-style:italic}.st{color:#C3E88D}.nu{color:#F78C6C}
+  .op{color:#F07178}.fn{color:#82AAFF}.kw{color:#C792EA}
+
+  /* tables (codebook) */
+  table.cb{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  table.cb th{text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--ink);padding:8px 10px}
+  table.cb td{border-bottom:1px solid var(--rule);padding:8px 10px;vertical-align:top}
+  table.cb td.v{font-family:var(--mono);font-weight:600;color:var(--area,var(--ink));white-space:nowrap}
+  table.cb tr:hover td{background:var(--panel)}
+  .cap{font-size:12.5px;color:var(--muted);margin:4px 0 0}
+
+  /* reveals */
+  .reveals{margin-top:4px;display:flex;flex-direction:column;gap:12px;max-width:800px}
+  details{border:1.5px solid var(--rule);border-radius:10px;background:var(--panel);overflow:hidden}
+  details[open]{border-color:var(--area,var(--ink))}
+  summary{cursor:pointer;list-style:none;padding:12px 15px;display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;user-select:none}
+  summary::-webkit-details-marker{display:none}
+  summary .tag{font-size:11px;color:#fff;background:var(--area,var(--ink));padding:4px 10px;border-radius:5px;letter-spacing:.1em}
+  summary .arrow{margin-left:auto;transition:transform .2s;color:var(--muted);font-size:17px}
+  details[open] summary .arrow{transform:rotate(90deg)}
+  @media (prefers-reduced-motion:reduce){summary .arrow{transition:none}}
+  .rb{padding:0 15px 15px}
+  .hint-text{font-size:15px;margin:0 0 12px}
+  .varline{font-family:var(--mono);font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .varline .lab{letter-spacing:.08em;text-transform:uppercase}
+  .varline .v{background:var(--area,var(--ink));color:#fff;padding:2px 8px;border-radius:4px}
+  .rb .code{margin:0}
+
+  /* nav */
+  .nav{position:fixed;left:var(--sidebar);right:0;bottom:0;z-index:8;background:color-mix(in srgb,var(--paper) 90%,transparent);backdrop-filter:blur(6px);border-top:2px solid var(--ink)}
+  .nav-inner{max-width:900px;margin:0 auto;padding:10px 34px;display:flex;align-items:center;gap:13px}
+  button.btn{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;border:1.5px solid var(--ink);background:var(--panel);color:var(--ink);border-radius:8px;padding:9px 14px;cursor:pointer}
+  button.btn:hover:not(:disabled){background:var(--ink);color:var(--paper)}
+  button.btn:disabled{opacity:.32;cursor:not-allowed}
+  .prog{flex:1;height:6px;background:var(--rule);border-radius:99px;overflow:hidden}
+  .prog i{display:block;height:100%;background:var(--ink);width:0;transition:width .3s}
+  .ghost{font-family:var(--mono);font-size:11.5px;color:var(--muted);white-space:nowrap}
+
+  @media(max-width:820px){
+    :root{--sidebar:0px}
+    .side{transform:translateX(-100%);transition:transform .25s;width:250px}
+    .side.open{transform:none}
+    .main{margin-left:0}
+    .nav{left:0}
+    .menubtn{display:inline-block}
+    .wrap{padding:24px 18px 130px}
+    .nav-inner{padding:10px 16px}
+    .ghost{display:none}
+  }
+
+  @media print{
+    .side,.nav,.topbar .obs,.menubtn,.copy{display:none!important}
+    body{background:#fff}
+    .main{margin-left:0}
+    .wrap{max-width:none;padding:0}
+    .slide{page-break-after:always;break-after:page;padding:12mm;animation:none}
+    details .rb{display:block}
+    details>summary{pointer-events:none}
+    summary .arrow{display:none}
+    .code{background:#f4f4f0}.code pre{color:#111}.cm{color:#587}.st{color:#264}.fn{color:#036}.op{color:#903}.nu{color:#a40}.kw{color:#619}
+  }
+</style>
+</head>
+<body>
+<aside class="side" id="side">
+  <div class="brand">Cato Intern Coding Lab</div>
+  <div class="brandsub">ACS &rarr; policy answers</div>
+  <nav id="toc"></nav>
+</aside>
+
+<div class="main">
+  <div class="wrap">
+    <div class="topbar">
+      <div class="mark"><button class="btn menubtn" id="menu" style="padding:4px 9px;margin-right:8px">&#9776;</button>ACS + R</div>
+      <div class="obs" id="obs">00 / 00</div>
+    </div>
+    <div class="slide" id="stage"></div>
+  </div>
+</div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <button class="btn" id="prev">&larr; Prev</button>
+    <div class="prog"><i id="bar"></i></div>
+    <button class="btn" id="next">Next &rarr;</button>
+    <span class="ghost">&larr; / &rarr; move one slide</span>
+  </div>
+</nav>
+
+<script>
+const AC = {
+  intro:"--a-intro", book:"--a-book",
+  health:"--a-health", education:"--a-education", econ:"--a-econ", immig:"--a-immig",
+  social:"--a-social", tech:"--a-tech", energy:"--a-energy", fun:"--a-fun"
+};
+const AREA_NAME = {
+  health:"Health", education:"Education", econ:"General economics", immig:"Immigration",
+  social:"Social policy", tech:"Technology", energy:"Energy / environment", fun:"Bonus"
+};
+
+const S = [
+// ============ INTRO ============
+{sec:"intro", area:"intro", tag:"Welcome", hero:true,
+ blocks:[{h:`<div class="hero">Cato Intern Coding Lab</div>
+   <div class="hero-sub">Turning the American Community Survey into policy answers</div>
+   <p class="lede">Use the contents on the left to jump between the intro, the codebook, and the questions.
+   Arrow keys move one slide at a time.</p>`}]},
+
+{sec:"intro", area:"intro", tag:"Why it matters", kick:"Intro", q:"Why learn this?",
+ blocks:[{h:`<p class="lede">The ACS is the largest household survey in the country &mdash; millions of
+   people asked every year about work, income, family, health coverage, housing, and how they get around.
+   Buried in it are the raw facts behind a huge range of policy debates.</p>
+   <p class="lede">You don't need to be a programmer. With three simple commands you can go from a raw
+   data file to a chart that <b>answers a question a policymaker actually cares about</b> &mdash; and by the
+   end of today, you'll have done exactly that.</p>`}]},
+
+{sec:"intro", area:"intro", tag:"What ACS answers", kick:"Intro", q:"What can the ACS tell us?",
+ blocks:[{h:`<p class="lede">Almost any question of the form <i>&ldquo;how does X relate to Y, for group Z?&rdquo;</i>
+   For example:</p>`},
+   {pts:[
+     "How has the uninsured rate changed over the last decade?",
+     "Does income really rise with education &mdash; and by how much?",
+     "Which states have the highest share of foreign-born residents?"]}]},
+
+{sec:"intro", area:"intro", tag:"Three steps", kick:"Intro", q:"Three steps for every question",
+ blocks:[{h:`<p class="lede">Every question today becomes the same three moves:</p>`},
+   {pts:[
+     "<b>filter</b> &mdash; which people are we looking at? (adults, one year, workers&hellip;)",
+     "<b>group_by</b> &mdash; what do we want to compare across? (states, years, education&hellip;)",
+     "<b>summarise</b> &mdash; what number do we want? (a count, a share, a median&hellip;)"]},
+   {h:`<p class="lede">Learn those three verbs and the rest is just choosing what to put in each one.</p>`}]},
+
+{sec:"intro", area:"intro", tag:"Set up", kick:"Intro", q:"Set up your workspace",
+ blocks:[
+   {h:`<p class="lede">First, point R at your project folder and load the tools.</p>`},
+   {code:`# Set working directory
+setwd("C:/Users/CarolXu/OneDrive - Cato Institute/Desktop/Intern Coding Lab")
+# confirm where you are
+getwd()
+
+# Packages
+install.packages("tidyverse")
+library(tidyverse)
+# load the data
+data <- read_csv("data/acs.csv")`}]},
+
+{sec:"intro", area:"intro", tag:"First look", kick:"Intro", q:"Take a first look",
+ blocks:[
+   {h:`<p class="lede">Never trust a file you haven't looked at. Start by sizing it up.</p>`},
+   {code:`# number of rows
+nrow(data)
+# rows x columns (people x variables)
+dim(data)
+# what variables are here?
+names(data)
+# view the first few rows
+head(data)`},
+   {h:`<div class="h3">Zooming in</div>
+     <p class="lede">Pull a single column, or make a quick tally of a category.</p>`},
+   {code:`# Every person's age, as a list of numbers
+data$age
+# how many rows of each category
+count(data, sex)
+# how many on Medicaid
+count(data, hinscaid)
+# how many rows per state
+count(data, statefip)
+
+# these two lines do the exact same thing
+count(data, sex)        # count 'sex' in 'data'
+data %>% count(sex)     # take 'data' AND THEN count by 'sex'`},
+   {h:`<div class="note"><b>Remember:</b> the ACS surveys a fraction of the country.
+     The unweighted count is how many <b>survey responses</b>. The weighted count is how many <b>Americans</b>.</div>`}]},
+
+{sec:"intro", area:"intro", tag:"Core functions", kick:"Intro", q:"The three core functions, in detail",
+ blocks:[
+   {h:`<div class="h3" style="border-top:none;padding-top:0;margin-top:0">filter() &mdash; pick rows</div>
+     <p class="lede">Keeps only rows that pass a test. Commas mean <i>and</i>.
+     Tests: <span class="tok">==</span> equals, <span class="tok">&gt;=</span> at least,
+     <span class="tok">&lt;</span> less than, <span class="tok">%in%</span> is one of.</p>`},
+   {code:`# adults in 2024 only
+data %>% filter(age >= 18, year == 2024)`},
+   {h:`<div class="h3">group_by() &mdash; split into groups</div>
+     <p class="lede">Doesn't change the data &mdash; it draws invisible dividers so the next step
+     runs once <i>per group</i> instead of once overall.</p>`},
+   {code:`data %>% group_by(statefip)      # one result per state, coming up`},
+   {h:`<div class="h3">summarise() &mdash; collapse to one number per group</div>
+     <p class="lede">Turn each group into a single row. Handy summaries:
+     <span class="tok">n()</span> counts rows, <span class="tok">median(x)</span>,
+     <span class="tok">mean(x)</span>. The clever one: <span class="tok">mean(test)</span> on a
+     TRUE/FALSE gives a <b>share</b>.</p>`},
+   {code:`# share of adults uninsured in each state
+data %>%
+  filter(age >= 18) %>%
+  group_by(statefip) %>%
+  summarise(pct = 100 * mean(hcovany == 1))   # hcovany 1 = no coverage`},
+   {h:`<div class="note">To rank a result (highest / earliest / lowest), add
+     <span class="tok">arrange()</span> at the end &mdash; you'll see it in a few solutions.</div>`}]},
+
+{sec:"intro", area:"intro", tag:"ggplot", kick:"Intro", q:"Making plots with ggplot",
+ blocks:[
+   {h:`<p class="lede">A ggplot is built in layers joined by <span class="tok">+</span>:
+     the <b>data</b>, then <b>aes()</b> mapping columns to the x and y axes, then a
+     <b>geom</b> that says what to draw.</p>
+     <div class="h3" style="border-top:none;padding-top:0">Bars &mdash; compare categories</div>`},
+   {code:`ggplot(result, aes(x = statefip, y = pct)) +
+  geom_col()`},
+   {h:`<div class="h3">Lines &mdash; show a trend over time</div>`},
+   {code:`ggplot(result, aes(x = year, y = pct)) +
+  geom_line() +
+  geom_point()`},
+   {h:`<p class="lede">Add <span class="tok">labs()</span> for titles, <span class="tok">coord_flip()</span>
+     to turn bars sideways (handy for 50 states), and a <span class="tok">fill</span> colour to taste.</p>`},
+   {code:`ggplot(result, aes(reorder(statefip, pct), pct)) +
+  geom_col(fill = "#3043B4") +
+  coord_flip() +
+  labs(x = NULL, y = "% uninsured")`}]},
+
+// ============ CODEBOOK ============
+{sec:"book", area:"book", tag:"Demographics", kick:"Codebook", q:"Codebook &mdash; who each person is",
+ blocks:[{h:`<table class="cb"><tr><th>Variable</th><th>What it is</th></tr>
+   <tr><td class="v">year</td><td>Survey year (2016&ndash;2024)</td></tr>
+   <tr><td class="v">statefip</td><td>State (FIPS code)</td></tr>
+   <tr><td class="v">age</td><td>Age in years</td></tr>
+   <tr><td class="v">sex</td><td>Sex &mdash; 1 male, 2 female</td></tr>
+   <tr><td class="v">marst</td><td>Marital status (married, divorced, never married&hellip;)</td></tr>
+   <tr><td class="v">bpl</td><td>Birthplace &mdash; codes below 100 are U.S., 100+ are foreign countries</td></tr>
+   <tr><td class="v">citizen</td><td>Citizenship &mdash; 0 N/A (U.S. born), 2 naturalized, 3 not a citizen</td></tr>
+   <tr><td class="v">yrimmig</td><td>Year of immigration (0 if U.S. born)</td></tr>
+   </table>
+   <div class="note"><b>Structural columns</b> also in the file: <span class="tok">serial</span> &amp;
+   <span class="tok">pernum</span> (household + person IDs), <span class="tok">gq</span> (group-quarters flag),
+   <span class="tok">perwt</span> (person weight). You won't group by these &mdash; they identify records and weight them.</div>`}]},
+
+{sec:"book", area:"book", tag:"Work & money", kick:"Codebook", q:"Codebook &mdash; work &amp; money",
+ blocks:[{h:`<table class="cb"><tr><th>Variable</th><th>What it is</th></tr>
+   <tr><td class="v">empstat</td><td>Employment status &mdash; 1 employed, 2 unemployed, 3 not in labor force</td></tr>
+   <tr><td class="v">occ2010</td><td>Occupation (2010 coding) &mdash; see the groups below</td></tr>
+   <tr><td class="v">uhrswork</td><td>Usual hours worked per week</td></tr>
+   <tr><td class="v">inctot</td><td>Total personal income (9999999 = N/A)</td></tr>
+   <tr><td class="v">ftotinc</td><td>Total family income (9999999 = N/A)</td></tr>
+   <tr><td class="v">incwage</td><td>Wage &amp; salary income (999999 = N/A)</td></tr>
+   <tr><td class="v">tranwork</td><td>Means of transportation to work (commute mode)</td></tr>
+   <tr><td class="v">departs</td><td>Time left home for work, 24-hr clock (0 = N/A)</td></tr>
+   <tr><td class="v">arrives</td><td>Time arrived at work, 24-hr clock (0 = N/A)</td></tr>
+   </table>
+   <div class="h3">Occupation groups (occ2010)</div>
+   <p class="cap">occ2010 has hundreds of detailed codes. These are the broad groups (approximate code ranges &mdash;
+   confirm exact codes in the IPUMS OCC2010 codebook). Industry (IND) is <b>not</b> in this extract; add it if you need it.</p>
+   <table class="cb"><tr><th>Code range</th><th>Occupation group</th></tr>
+   <tr><td class="v">0010&ndash;0430</td><td>Management</td></tr>
+   <tr><td class="v">0500&ndash;0950</td><td>Business &amp; financial operations</td></tr>
+   <tr><td class="v">1000&ndash;1240</td><td>Computer &amp; mathematical</td></tr>
+   <tr><td class="v">1300&ndash;1560</td><td>Architecture &amp; engineering</td></tr>
+   <tr><td class="v">1600&ndash;1980</td><td>Life, physical &amp; social science</td></tr>
+   <tr><td class="v">2000&ndash;2060</td><td>Community &amp; social service</td></tr>
+   <tr><td class="v">2100&ndash;2160</td><td>Legal</td></tr>
+   <tr><td class="v">2200&ndash;2550</td><td>Education, training &amp; library</td></tr>
+   <tr><td class="v">2600&ndash;2960</td><td>Arts, design, entertainment, media</td></tr>
+   <tr><td class="v">3000&ndash;3540</td><td>Healthcare practitioners</td></tr>
+   <tr><td class="v">3600&ndash;3650</td><td>Healthcare support</td></tr>
+   <tr><td class="v">3700&ndash;3950</td><td>Protective service</td></tr>
+   <tr><td class="v">4000&ndash;4160</td><td>Food preparation &amp; serving</td></tr>
+   <tr><td class="v">4200&ndash;4250</td><td>Building &amp; grounds cleaning</td></tr>
+   <tr><td class="v">4300&ndash;4650</td><td>Personal care &amp; service</td></tr>
+   <tr><td class="v">4700&ndash;4965</td><td>Sales &amp; related</td></tr>
+   <tr><td class="v">5000&ndash;5940</td><td>Office &amp; administrative support</td></tr>
+   <tr><td class="v">6005&ndash;6130</td><td>Farming, fishing &amp; forestry</td></tr>
+   <tr><td class="v">6200&ndash;6765</td><td>Construction</td></tr>
+   <tr><td class="v">6800&ndash;6940</td><td>Extraction</td></tr>
+   <tr><td class="v">7000&ndash;7630</td><td>Installation, maintenance &amp; repair</td></tr>
+   <tr><td class="v">7700&ndash;8965</td><td>Production</td></tr>
+   <tr><td class="v">9000&ndash;9750</td><td>Transportation &amp; material moving</td></tr>
+   <tr><td class="v">9800&ndash;9830</td><td>Military</td></tr>
+   </table>`}]},
+
+{sec:"book", area:"book", tag:"Home & health", kick:"Codebook", q:"Codebook &mdash; home &amp; health",
+ blocks:[{h:`<table class="cb"><tr><th>Variable</th><th>What it is</th></tr>
+   <tr><td class="v">hcovany</td><td>Any health insurance &mdash; 1 no coverage, 2 has coverage</td></tr>
+   <tr><td class="v">hinscaid</td><td>Medicaid / CHIP coverage &mdash; 1 no, 2 yes</td></tr>
+   <tr><td class="v">costelec</td><td>Annual electricity cost ($); special codes for &ldquo;no charge / in rent&rdquo;</td></tr>
+   <tr><td class="v">cismrtphn</td><td>Household has a smartphone &mdash; 1 no, 2 yes (0 = N/A)</td></tr>
+   </table>`}]},
+
+// ============ QUESTIONS ============
+// ---- Health ----
+{sec:"q", area:"health",
+ q:"In 2024, what share of adults (18+) were uninsured, and how did that vary from state to state?",
+ hint:"Filter to 2024 and to adults, then for each state take the average of an \u201cis uninsured\u201d test.",
+ vars:["year","age","hcovany","statefip"],
+ sol:`uninsured <- data %>%
+  filter(year == 2024, age >= 18) %>%
+  group_by(statefip) %>%
+  summarise(pct = 100 * mean(hcovany == 1))   # hcovany 1 = no coverage
+
+ggplot(uninsured, aes(reorder(statefip, pct), pct)) +
+  geom_col(fill = "#3043B4") + coord_flip() +
+  labs(x = NULL, y = "% uninsured")`},
+{sec:"q", area:"health",
+ q:"In 2024, what share of children were covered by Medicaid or CHIP, and where was coverage highest?",
+ hint:"HINSCAID covers both Medicaid and CHIP. Filter to 2024 and children, then average a \u201chas Medicaid/CHIP\u201d test by state.",
+ vars:["year","age","hinscaid","statefip"],
+ sol:`kids <- data %>%
+  filter(year == 2024, age < 19) %>%
+  group_by(statefip) %>%
+  summarise(pct = 100 * mean(hinscaid == 2))   # hinscaid 2 = Medicaid/CHIP
+
+ggplot(kids, aes(reorder(statefip, pct), pct)) +
+  geom_col(fill = "#3043B4") + coord_flip() +
+  labs(x = NULL, y = "% of children on Medicaid/CHIP")`},
+{sec:"q", area:"health",
+ q:"In 2024, was Medicaid coverage among working-age adults higher for the unemployed than the employed?",
+ hint:"Filter to 2024 and working-age adults, group by employment status, take the share on Medicaid in each.",
+ vars:["year","age","empstat","hinscaid"],
+ sol:`data %>%
+  filter(year == 2024, age >= 18, age <= 64) %>%
+  group_by(empstat) %>%          # 1 employed, 2 unemployed, 3 not in labor force
+  summarise(pct_medicaid = 100 * mean(hinscaid == 2))`},
+
+// ---- Education ----
+{sec:"q", area:"education",
+ q:"In 2024, how much did median personal income rise with each step up in education?",
+ hint:"Drop the N/A income code, then take a median within each education level.",
+ vars:["year","inctot","educ"],
+ sol:`inc <- data %>%
+  filter(year == 2024, inctot != 9999999) %>%   # 9999999 = N/A
+  group_by(educ) %>%
+  summarise(median_income = median(inctot))
+
+ggplot(inc, aes(factor(educ), median_income)) +
+  geom_col(fill = "#0D0E51") +
+  labs(x = "Education level (educ code)", y = "Median personal income")`},
+{sec:"q", area:"education",
+ q:"In 2024, did women or men aged 25+ hold college degrees at a higher rate?",
+ hint:"\u201cBachelor\u2019s or higher\u201d is roughly educ \u2265 10. Filter to 2024 and adults 25+, then average that test by sex.",
+ vars:["year","age","educ","sex"],
+ sol:`data %>%
+  filter(year == 2024, age >= 25) %>%
+  group_by(sex) %>%              # 1 male, 2 female
+  summarise(pct_ba = 100 * mean(educ >= 10))   # educ >= 10 ~ bachelor's+`},
+{sec:"q", area:"education",
+ q:"Among young adults aged 25\u201334, how much did the college-completion rate change from 2016 to 2024?",
+ hint:"Filter to the 25\u201334 band, then group by year to trace the trend.",
+ vars:["year","age","educ"],
+ sol:`grads <- data %>%
+  filter(age >= 25, age <= 34) %>%
+  group_by(year) %>%
+  summarise(pct_ba = 100 * mean(educ >= 10))
+
+ggplot(grads, aes(year, pct_ba)) +
+  geom_line(linewidth = 1, color = "#0D0E51") + geom_point() +
+  labs(x = NULL, y = "% with bachelor's+ (age 25-34)")`},
+
+// ---- General economics ----
+{sec:"q", area:"econ",
+ q:"Between 2016 and 2024, did typical wages actually grow \u2014 how did median wage income move year by year?",
+ hint:"Keep people with real wage earnings, then group by year and take the median wage.",
+ vars:["year","incwage"],
+ sol:`wages <- data %>%
+  filter(incwage > 0, incwage != 999999) %>%
+  group_by(year) %>%
+  summarise(median_wage = median(incwage))
+
+ggplot(wages, aes(year, median_wage)) +
+  geom_line(linewidth = 1, color = "#1B7A4B") + geom_point() +
+  labs(x = NULL, y = "Median wage income")`},
+{sec:"q", area:"econ",
+ q:"Between 2016 and 2024, how did the employment rate of working-age adults move \u2014 and how deep was the 2020 dip?",
+ hint:"Filter to ages 18\u201364, group by year, take the share who are employed.",
+ vars:["year","age","empstat"],
+ sol:`emp <- data %>%
+  filter(age >= 18, age <= 64) %>%
+  group_by(year) %>%
+  summarise(pct_employed = 100 * mean(empstat == 1))   # 1 = employed
+
+ggplot(emp, aes(year, pct_employed)) +
+  geom_line(linewidth = 1, color = "#1B7A4B") + geom_point() +
+  labs(x = NULL, y = "% employed (age 18-64)")`},
+{sec:"q", area:"econ",
+ q:"In 2024, how big was the gap in average weekly hours worked between men and women?",
+ hint:"Keep people who report hours (> 0), group by sex, average usual hours worked.",
+ vars:["year","uhrswork","sex"],
+ sol:`data %>%
+  filter(year == 2024, uhrswork > 0) %>%
+  group_by(sex) %>%
+  summarise(avg_hours = mean(uhrswork))`},
+{sec:"q", area:"econ",
+ q:"In 2024, which occupations had the highest median wages \u2014 and which the lowest?",
+ hint:"Keep workers with real wages, take median wage by occupation, then sort with arrange() to see the extremes.",
+ vars:["year","occ2010","incwage"],
+ sol:`data %>%
+  filter(year == 2024, incwage > 0, incwage != 999999) %>%
+  group_by(occ2010) %>%
+  summarise(median_wage = median(incwage)) %>%
+  arrange(desc(median_wage))     # highest-paid occupations at the top`},
+{sec:"q", area:"econ",
+ q:"In 2024, which occupations asked the most of their workers \u2014 the longest average work weeks?",
+ hint:"Keep workers reporting hours, average usual hours by occupation, sort descending.",
+ vars:["year","occ2010","uhrswork"],
+ sol:`data %>%
+  filter(year == 2024, uhrswork > 0) %>%
+  group_by(occ2010) %>%
+  summarise(avg_hours = mean(uhrswork)) %>%
+  arrange(desc(avg_hours))`},
+{sec:"q", area:"econ",
+ q:"In 2024, how did median family income differ across states?",
+ hint:"Drop the N/A family-income code, take a median within each state.",
+ vars:["year","ftotinc","statefip"],
+ sol:`fam <- data %>%
+  filter(year == 2024, ftotinc != 9999999) %>%
+  group_by(statefip) %>%
+  summarise(median_family_income = median(ftotinc))
+
+ggplot(fam, aes(reorder(statefip, median_family_income), median_family_income)) +
+  geom_col(fill = "#1B7A4B") + coord_flip() +
+  labs(x = NULL, y = "Median family income")`},
+
+// ---- Immigration ----
+{sec:"q", area:"immig",
+ q:"In 2024, what share of each state\u2019s population was foreign-born, and where was that share largest?",
+ hint:"Birthplace codes below 100 are U.S.; 100+ are foreign. Average a \u201cborn abroad\u201d test by state.",
+ vars:["year","bpl","statefip"],
+ sol:`fb <- data %>%
+  filter(year == 2024) %>%
+  group_by(statefip) %>%
+  summarise(pct = 100 * mean(bpl >= 100))   # bpl >= 100 = foreign-born
+
+ggplot(fb, aes(reorder(statefip, pct), pct)) +
+  geom_col(fill = "#B23A48") + coord_flip() +
+  labs(x = NULL, y = "% foreign-born")`},
+{sec:"q", area:"immig",
+ q:"Among immigrants in 2024, did those who arrived longer ago become naturalized citizens at higher rates?",
+ hint:"Keep the foreign-born with a valid arrival year, group by decade of arrival, take the naturalized share.",
+ vars:["year","bpl","citizen","yrimmig"],
+ sol:`data %>%
+  filter(year == 2024, bpl >= 100, yrimmig > 0) %>%
+  group_by(decade = floor(yrimmig / 10) * 10) %>%   # arrival decade
+  summarise(pct_naturalized = 100 * mean(citizen == 2))   # 2 = naturalized`},
+{sec:"q", area:"immig",
+ q:"Between 2016 and 2024, how did the foreign-born share of the total population change?",
+ hint:"Same \u201cborn abroad\u201d test, grouped by year.",
+ vars:["year","bpl"],
+ sol:`trend <- data %>%
+  group_by(year) %>%
+  summarise(pct = 100 * mean(bpl >= 100))
+
+ggplot(trend, aes(year, pct)) +
+  geom_line(linewidth = 1, color = "#B23A48") + geom_point() +
+  labs(x = NULL, y = "% foreign-born")`},
+
+// ---- Social policy ----
+{sec:"q", area:"social",
+ q:"In 2024, what share of children lived in lower-income families, and where were they concentrated?",
+ hint:"Keep 2024 children with a valid family income, then average a rough \u201cbelow $30k\u201d test by state. (A proper poverty measure would use the POVERTY variable \u2014 see the next question.)",
+ vars:["year","age","ftotinc","statefip"],
+ sol:`lowinc <- data %>%
+  filter(year == 2024, age < 18, ftotinc != 9999999) %>%
+  group_by(statefip) %>%
+  summarise(pct_low = 100 * mean(ftotinc < 30000))   # rough low-income cutoff
+
+ggplot(lowinc, aes(reorder(statefip, pct_low), pct_low)) +
+  geom_col(fill = "#8A5A2B") + coord_flip() +
+  labs(x = NULL, y = "% of children in families under $30k")`},
+{sec:"q", area:"social",
+ q:"In 2024, what share of people lived below the federal poverty line, by state?",
+ hint:"POVERTY is income as a % of the poverty threshold (below the line = under 100). NOTE: this variable is NOT in the current extract \u2014 add it to the IPUMS pull to run this.",
+ vars:["year","poverty","statefip"],
+ sol:`# NOTE: requires adding POVERTY to the IPUMS extract (not in the current pull)
+pov <- data %>%
+  filter(year == 2024, poverty > 0) %>%   # 0 = N/A
+  group_by(statefip) %>%
+  summarise(pct = 100 * mean(poverty < 100))   # < 100% of poverty line
+
+ggplot(pov, aes(reorder(statefip, pct), pct)) +
+  geom_col(fill = "#8A5A2B") + coord_flip() +
+  labs(x = NULL, y = "% below poverty line")`},
+
+// ---- Technology ----
+{sec:"q", area:"tech",
+ q:"In 2024, what share of households had a smartphone, and which states were most and least connected?",
+ hint:"Drop the N/A code, then average a \u201chas a smartphone\u201d test by state.",
+ vars:["year","cismrtphn","statefip"],
+ sol:`phones <- data %>%
+  filter(year == 2024, cismrtphn != 0) %>%
+  group_by(statefip) %>%
+  summarise(pct = 100 * mean(cismrtphn == 2))   # 2 = has smartphone
+
+ggplot(phones, aes(reorder(statefip, pct), pct)) +
+  geom_col(fill = "#6D3FA3") + coord_flip() +
+  labs(x = NULL, y = "% with a smartphone")`},
+{sec:"q", area:"tech",
+ q:"Between 2016 and 2024, how quickly did smartphones spread across households?",
+ hint:"Same smartphone test, grouped by year, drawn as a line.",
+ vars:["year","cismrtphn"],
+ sol:`sp <- data %>%
+  filter(cismrtphn != 0) %>%
+  group_by(year) %>%
+  summarise(pct = 100 * mean(cismrtphn == 2))
+
+ggplot(sp, aes(year, pct)) +
+  geom_line(linewidth = 1, color = "#6D3FA3") + geom_point() +
+  labs(x = NULL, y = "% with a smartphone")`},
+{sec:"q", area:"tech",
+ q:"In 2024, was there a digital divide by education \u2014 did smartphone ownership rise with schooling?",
+ hint:"Group by education level, take the smartphone share in each.",
+ vars:["year","cismrtphn","educ"],
+ sol:`data %>%
+  filter(year == 2024, cismrtphn != 0) %>%
+  group_by(educ) %>%
+  summarise(pct = 100 * mean(cismrtphn == 2))`},
+
+// ---- Energy / environment ----
+{sec:"q", area:"energy",
+ q:"In 2024, how did Americans get to work \u2014 what were the most common commute modes?",
+ hint:"Keep commuters, group by transport mode, count how many fall in each.",
+ vars:["year","tranwork"],
+ sol:`commute <- data %>%
+  filter(year == 2024, tranwork > 0) %>%
+  group_by(tranwork) %>%
+  summarise(n = n())
+
+ggplot(commute, aes(reorder(tranwork, n), n)) +
+  geom_col(fill = "#0E7C86") + coord_flip() +
+  labs(x = "Mode (tranwork code)", y = "Workers (sample)")`},
+{sec:"q", area:"energy",
+ q:"In 2024, which states had the highest average household electricity bills?",
+ hint:"Electricity cost has special codes for \u201cno charge / in rent\u201d \u2014 keep real dollar amounts, then average by state.",
+ vars:["year","costelec","statefip"],
+ sol:`elec <- data %>%
+  filter(year == 2024, costelec > 0, costelec < 9990) %>%  # drop N/A & special codes
+  group_by(statefip) %>%
+  summarise(avg_bill = mean(costelec))
+
+ggplot(elec, aes(reorder(statefip, avg_bill), avg_bill)) +
+  geom_col(fill = "#0E7C86") + coord_flip() +
+  labs(x = NULL, y = "Avg annual electricity cost ($)")`},
+{sec:"q", area:"energy",
+ q:"How did working from home change before, during, and after COVID \u2014 comparing 2019, 2021, and 2024?",
+ hint:"\u201cWorked at home\u201d is a commute-mode category. Keep those three years and average a \u201cworked at home\u201d test by year.",
+ vars:["year","tranwork"],
+ sol:`wfh <- data %>%
+  filter(year %in% c(2019, 2021, 2024), tranwork > 0) %>%
+  group_by(year) %>%
+  summarise(pct_wfh = 100 * mean(tranwork == 70))   # 70 = worked at home
+
+ggplot(wfh, aes(factor(year), pct_wfh)) +
+  geom_col(fill = "#0E7C86") +
+  labs(x = NULL, y = "% working from home")`},
+
+// ---- Bonus ----
+{sec:"q", area:"fun",
+ q:"What time does America clock in? In 2024, which occupations left home for work the earliest?",
+ hint:"DEPARTS is a 24-hour clock (0600 = 6 a.m.). Keep commuters, average departure time by occupation, sort. (Bakers win.)",
+ vars:["year","occ2010","departs"],
+ sol:`data %>%
+  filter(year == 2024, departs > 0) %>%
+  group_by(occ2010) %>%
+  summarise(avg_departs = mean(departs)) %>%
+  arrange(avg_departs)     # earliest risers first`},
+{sec:"q", area:"fun",
+ q:"Where are the night-shift towns? In 2024, which states had the most workers leaving before 5 a.m.?",
+ hint:"Keep commuters with a real departure time, then average a \u201cleft before 0500\u201d test by state.",
+ vars:["year","departs","statefip"],
+ sol:`night <- data %>%
+  filter(year == 2024, departs > 0) %>%
+  group_by(statefip) %>%
+  summarise(pct = 100 * mean(departs < 500))   # before 5:00 a.m.
+
+ggplot(night, aes(reorder(statefip, pct), pct)) +
+  geom_col(fill = "#C97703") + coord_flip() +
+  labs(x = NULL, y = "% leaving before 5 a.m.")`},
+{sec:"q", area:"fun",
+ q:"Does working in pajamas pay? In 2024, did people who worked from home out-earn those who commuted?",
+ hint:"Group by whether the commute mode was \u201cworked at home,\u201d compare median wage income.",
+ vars:["year","tranwork","incwage"],
+ sol:`data %>%
+  filter(year == 2024, incwage > 0, incwage != 999999) %>%
+  group_by(wfh = tranwork == 70) %>%   # TRUE = worked at home
+  summarise(median_wage = median(incwage))`},
+{sec:"q", area:"fun",
+ q:"The overqualified paycheck: in 2024, which jobs paid the most to workers WITHOUT a bachelor\u2019s degree?",
+ hint:"Filter to workers below a bachelor\u2019s (educ < 10) with real wages, take median wage by occupation, sort.",
+ vars:["year","educ","occ2010","incwage"],
+ sol:`data %>%
+  filter(year == 2024, educ < 10, incwage > 0, incwage != 999999) %>%
+  group_by(occ2010) %>%
+  summarise(median_wage = median(incwage)) %>%
+  arrange(desc(median_wage))`},
+{sec:"q", area:"fun",
+ q:"Do single people grind harder? In 2024, how did average weekly hours differ by marital status?",
+ hint:"Keep people who report hours, group by marital status, average usual hours worked.",
+ vars:["year","marst","uhrswork"],
+ sol:`data %>%
+  filter(year == 2024, uhrswork > 0) %>%
+  group_by(marst) %>%       # marital status
+  summarise(avg_hours = mean(uhrswork))`},
+{sec:"q", area:"fun",
+ q:"The rare commute: how many people got to work by ferry, bike, or motorcycle \u2014 and is it growing since 2016?",
+ hint:"Keep commuters, then count each transport mode by year to watch the unusual ones rise or fall.",
+ vars:["year","tranwork"],
+ sol:`data %>%
+  filter(tranwork > 0) %>%
+  group_by(year, tranwork) %>%
+  summarise(n = n(), .groups = "drop")   # find the ferry / bike / motorcycle codes`},
+{sec:"q", area:"fun",
+ q:"The late crowd: in 2024, which occupations arrived at work the latest on average?",
+ hint:"ARRIVES is the clock time people reach work. Average it by occupation and sort descending. (Bartenders, artists\u2026)",
+ vars:["year","occ2010","arrives"],
+ sol:`data %>%
+  filter(year == 2024, arrives > 0) %>%
+  group_by(occ2010) %>%
+  summarise(avg_arrival = mean(arrives)) %>%
+  arrange(desc(avg_arrival))`},
+];
+
+/* ---------- R syntax highlighter ---------- */
+function hiR(src){
+  const KW=new Set(['TRUE','FALSE','NA','NULL','Inf','NaN','if','else','for','in','function','return']);
+  const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  let out='',i=0,n=src.length;
+  const OP="<>=!+-*/&|~:?";
+  while(i<n){
+    const c=src[i];
+    if(c==='#'){let j=i;while(j<n&&src[j]!=='\n')j++;out+='<span class="cm">'+esc(src.slice(i,j))+'</span>';i=j;continue;}
+    if(c==='"'||c==="'"){const q=c;let j=i+1;while(j<n){if(src[j]==='\\'){j+=2;continue;}if(src[j]===q){j++;break;}j++;}out+='<span class="st">'+esc(src.slice(i,j))+'</span>';i=j;continue;}
+    if(c>='0'&&c<='9'){let j=i;while(j<n&&/[0-9.eE]/.test(src[j]))j++;out+='<span class="nu">'+src.slice(i,j)+'</span>';i=j;continue;}
+    if(/[A-Za-z._]/.test(c)){let j=i;while(j<n&&/[A-Za-z0-9._]/.test(src[j]))j++;const w=src.slice(i,j);let k=j;while(k<n&&src[k]===' ')k++;
+      if(src[k]==='(')out+='<span class="fn">'+w+'</span>';else if(KW.has(w))out+='<span class="kw">'+w+'</span>';else out+=esc(w);i=j;continue;}
+    if(c==='%'){let j=i+1;while(j<n&&src[j]!=='%')j++;j++;out+='<span class="op">'+esc(src.slice(i,j))+'</span>';i=j;continue;}
+    if(OP.includes(c)){let j=i;while(j<n&&OP.includes(src[j]))j++;out+='<span class="op">'+esc(src.slice(i,j))+'</span>';i=j;continue;}
+    out+=esc(c);i++;
+  }
+  return out;
+}
+function codeBlock(code,label){
+  return `<div class="code"><div class="bar"><span class="d d1"></span><span class="d d2"></span><span class="d d3"></span><span class="lbl">${label||'R'}</span></div>`+
+    `<button class="copy" data-code="${encodeURIComponent(code)}">Copy</button><pre>${hiR(code)}</pre></div>`;
+}
+
+const stage=document.getElementById('stage');
+const obs=document.getElementById('obs');
+const bar=document.getElementById('bar');
+const prevB=document.getElementById('prev');
+const nextB=document.getElementById('next');
+let i=0;
+
+function render(){
+  const s=S[i];
+  stage.style.setProperty('--area',`var(${AC[s.area]})`);
+  let html='';
+  if(s.sec==='q'){
+    html+=`<div class="eyebrow"><span class="box">\u2713</span>${AREA_NAME[s.area]}<span class="chip"></span></div>`;
+    html+=`<h1 class="q">${s.q}</h1>`;
+    const chips=(s.vars||[]).map(v=>`<span class="v">${v}</span>`).join('');
+    html+=`<div class="reveals">
+      <details class="hint"><summary><span class="tag">Hint</span><span class="arrow">\u203a</span></summary>
+        <div class="rb"><p class="hint-text">${s.hint}</p><div class="varline"><span class="lab">Variables:</span>${chips}</div></div></details>
+      <details class="sol"><summary><span class="tag">Solution</span><span class="arrow">\u203a</span></summary>
+        <div class="rb">${codeBlock(s.sol,'analysis.R')}</div></details>
+    </div>`;
+  } else {
+    if(s.hero){
+      s.blocks.forEach(b=>{ if(b.h)html+=b.h; });
+    }else{
+      if(s.kick)html+=`<div class="kick">${s.kick}</div>`;
+      if(s.q)html+=`<h1 class="q">${s.q}</h1>`;
+      s.blocks.forEach(b=>{
+        if(b.h)html+=b.h;
+        if(b.pts)html+=`<ul class="pts">`+b.pts.map(p=>`<li>${p}</li>`).join('')+`</ul>`;
+        if(b.code)html+=codeBlock(b.code);
+      });
+    }
+  }
+  stage.innerHTML=html;
+  obs.textContent=`${String(i+1).padStart(2,'0')} / ${String(S.length).padStart(2,'0')}`;
+  bar.style.width=`${(i/(S.length-1))*100}%`;
+  prevB.disabled=i===0; nextB.disabled=i===S.length-1;
+  highlightToc();
+  window.scrollTo({top:0,behavior:'instant'});
+}
+function go(n){ i=Math.max(0,Math.min(S.length-1,n)); render(); if(window.innerWidth<=820) side.classList.remove('open'); }
+
+/* ---------- table of contents ---------- */
+const toc=document.getElementById('toc');
+const side=document.getElementById('side');
+let tocRefs=[];
+function buildToc(){
+  toc.innerHTML='';
+  // Intro
+  addSecHeader('Intro');
+  S.forEach((s,idx)=>{ if(s.sec==='intro') addLink(idx,s.tag,'intro'); });
+  addSecHeader('Codebook');
+  S.forEach((s,idx)=>{ if(s.sec==='book') addLink(idx,s.tag,'book'); });
+  addSecHeader('Questions');
+  const seen={};
+  S.forEach((s,idx)=>{ if(s.sec==='q'&&!seen[s.area]){seen[s.area]=1; addLink(idx,AREA_NAME[s.area],s.area);} });
+}
+function addSecHeader(t){ const d=document.createElement('div'); d.className='sec'; d.textContent=t; toc.appendChild(d); }
+function addLink(idx,label,area){
+  const a=document.createElement('a');
+  a.style.setProperty('--ac',`var(${AC[area]})`);
+  a.innerHTML=`<span class="dot"></span>${label}`;
+  a.onclick=()=>go(idx);
+  a.dataset.idx=idx; a.dataset.area=area;
+  toc.appendChild(a); tocRefs.push(a);
+}
+function highlightToc(){
+  const cur=S[i];
+  tocRefs.forEach(a=>{
+    const ai=+a.dataset.idx;
+    let on=false;
+    if(cur.sec==='q'){ on = (a.dataset.area===cur.area) && S[ai].sec==='q'; }
+    else { on = ai===i; }
+    a.classList.toggle('on',on);
+  });
+}
+
+prevB.onclick=()=>go(i-1);
+nextB.onclick=()=>go(i+1);
+document.getElementById('menu').onclick=()=>side.classList.toggle('open');
+document.addEventListener('keydown',e=>{
+  const t=(e.target.tagName||'').toLowerCase();
+  if(t==='input'||t==='textarea')return;
+  if(e.key==='ArrowRight')go(i+1);
+  else if(e.key==='ArrowLeft')go(i-1);
+});
+stage.addEventListener('click',e=>{
+  const b=e.target.closest('.copy'); if(!b)return;
+  navigator.clipboard.writeText(decodeURIComponent(b.dataset.code)).then(()=>{
+    b.textContent='Copied'; b.classList.add('done');
+    setTimeout(()=>{b.textContent='Copy';b.classList.remove('done');},1400);
+  });
+});
+
+buildToc();
+render();
+</script>
+</body>
+</html>
