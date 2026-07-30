@@ -247,37 +247,36 @@ data %>%
   filter(age >= 25, age <= 34, occ2010 == 2100, degfieldd == 5501) %>%   # 2100 = lawyers, judges
   summarise(n = n())
 
-# DEGFIELD field-of-degree labels (common codes; extend as needed)
+# Lawyers with an economics degree (adults 25-34)
+data %>%
+  filter(age >= 25, age <= 34, occ2010 == 2100, degfieldd == 5501) %>%   # 2100 = lawyers/judges, 5501 = economics
+  summarise(n = n())
 
-lawyer_fields <- data %>%
-  filter(year == 2024, age >= 25, age <= 34, occ2010 == 2100) %>%   # 2100 = lawyers, judges
-  group_by(degfieldd) %>%
-  summarise(population = sum(perwt), .groups = "drop") %>%           # weighted estimate of people
-  slice_max(population, n = 10) %>%                                  # top 10 fields
-  left_join(degfield_lk, by = "degfield") %>%
-  mutate(field = coalesce(field, paste0("Field ", degfieldd)),
-         is_econ = degfieldd == 5501)                                  # 54 = economics
+# weighted: young lawyers with an economics degree vs. any other field
+lawyer_degree <- data %>%
+  filter(year == 2024, age >= 25, age <= 34, occ2010 == 2100, degfieldd > 0) %>%  # 2100 = lawyers/judges; keep those reporting a degree field
+  group_by(field = if_else(degfieldd == 5501, "Economics", "Other field")) %>%    # 5501 = economics
+  summarise(lawyers = sum(perwt), .groups = "drop")
 
-ggplot(lawyer_fields, aes(x = reorder(field, population), y = population, fill = is_econ)) +
-  geom_col() +
-  coord_flip() +
-  scale_fill_manual(values = c(`TRUE` = "#C97703", `FALSE` = "#0D0E51"), guide = "none") +
-  scale_y_continuous(labels = scales::label_comma(), expand = expansion(mult = c(0, 0.04))) +
+ggplot(lawyer_degree, aes(x = reorder(field, lawyers), y = lawyers, fill = field)) +
+  geom_col(width = 0.65) +
+  scale_fill_manual(values = c("Economics" = "#C97703", "Other field" = "#0D0E51"), guide = "none") +
+  scale_y_continuous(labels = scales::label_comma(), expand = expansion(mult = c(0, 0.04)), limits = c(0, 300000)) +
   labs(
-    title = "Field of Degree Among Young Lawyers (2024)",
-    subtitle = "Lawyers and judges aged 25-34, by field of bachelor's degree (weighted); economics in orange",
+    title = "Young Lawyers With an Economics Degree (2024)",
+    subtitle = "Lawyers and judges aged 25-34, by whether their bachelor's field was economics (weighted)",
     x = NULL, y = NULL,
     caption = "Source: ACS PUMS via IPUMS") +
   theme_minimal() +
   theme(
     plot.title = element_text(size = 14, face = "bold", hjust = 0, color = "black"),
     plot.subtitle = element_text(size = 11, color = "gray40", hjust = 0, margin = margin(b = 12)),
-    panel.grid.major.y = element_blank(),
+    panel.grid.major.x = element_blank(),
     panel.grid.minor = element_blank(),
-    panel.grid.major.x = element_line(color = "gray90", linewidth = 0.5),
+    panel.grid.major.y = element_line(color = "gray90", linewidth = 0.5),
     axis.line = element_blank(),
     axis.ticks = element_blank(),
-    axis.text = element_text(size = 9, color = "gray40"),
+    axis.text = element_text(size = 10, color = "gray40"),
     plot.caption = element_text(size = 8, color = "gray40", hjust = 0),
     plot.caption.position = "plot",
     plot.title.position = "plot",
@@ -286,6 +285,7 @@ ggplot(lawyer_fields, aes(x = reorder(field, population), y = population, fill =
 
 ggsave("Results/education3.png", width = 8, height = 6)
 
+
 ## GENERAL ECONOMICS --------------------------------------------------------------------------------
 # wages over time
 wages <- data %>%
@@ -293,11 +293,15 @@ wages <- data %>%
   group_by(year) %>%
   summarise(median_wage = matrixStats::weightedMedian(incwage, perwt), .groups = "drop")
 
+ggplot(wages, aes(year, median_wage)) +
+  geom_line(linewidth = 1, color = "#1B7A4B") + geom_point() +
+  labs(x = NULL, y = "Median wage income")
+
 ggplot(wages, aes(x = as.numeric(year), y = median_wage)) +
   geom_line(linewidth = 1.2, color = "#1B7A4B") +
   geom_point(size = 2, color = "#1B7A4B") +
   scale_x_continuous(breaks = seq(2016, 2024, by = 2), expand = c(0.02, 0)) +
-  scale_y_continuous(labels = scales::label_dollar(), expand = c(0.02, 0)) +
+  scale_y_continuous(labels = scales::label_dollar(), expand = c(0.02, 0), limits = c(32000, 48000)) +
   labs(
     title = "Median Wage Income, 2016-2024",
     subtitle = "Weighted median wage and salary income among earners",
@@ -324,11 +328,15 @@ emp <- data %>%
   group_by(year) %>%
   summarise(pct_employed = 100 * weighted.mean(empstat == 1, perwt), .groups = "drop")  # 1 = employed
 
+ggplot(emp, aes(year, pct_employed)) +
+  geom_line(linewidth = 1, color = "#1B7A4B") + geom_point() +
+  labs(x = NULL, y = "% employed (age 18-64)")
+
 ggplot(emp, aes(x = as.numeric(year), y = pct_employed)) +
   geom_line(linewidth = 1.2, color = "#1B7A4B") +
   geom_point(size = 2, color = "#1B7A4B") +
   scale_x_continuous(breaks = seq(2016, 2024, by = 2), expand = c(0.02, 0)) +
-  scale_y_continuous(labels = scales::label_percent(scale = 1), expand = c(0.02, 0)) +
+  scale_y_continuous(labels = scales::label_percent(scale = 1), expand = c(0.02, 0), limits = c(70, 76)) +
   labs(
     title = "Employment Rate, 2016-2024",
     subtitle = "Share of working-age adults (18-64) employed, weighted",
@@ -350,6 +358,11 @@ ggplot(emp, aes(x = as.numeric(year), y = pct_employed)) +
 ggsave("Results/econ2.png", width = 8, height = 6)
 
 # work hours by sex
+data %>%
+  filter(year == 2024, uhrswork > 0) %>%
+  group_by(sex) %>%
+  summarise(avg_hours = mean(uhrswork))
+
 hours <- data %>%
   filter(year == 2024, uhrswork > 0) %>%
   group_by(sex) %>%
@@ -381,7 +394,54 @@ ggplot(hours, aes(x = sex, y = avg_hours, fill = sex)) +
 
 ggsave("Results/econ3.png", width = 8, height = 6)
 
+# occupation-code -> label lookup (extend from the full IPUMS OCC2010 list as needed)
+occ_lk <- tibble::tribble(
+  ~occ2010, ~label,
+    10, "Chief executives and legislators",
+    20, "General and operations managers",
+    50, "Marketing and sales managers",
+   120, "Financial managers",
+   205, "Farmers, ranchers, and other agricultural managers",
+   220, "Construction managers",
+   230, "Education administrators",
+   430, "Miscellaneous managers",
+   710, "Management analysts",
+   800, "Accountants and auditors",
+  1020, "Software developers",
+  1107, "Computer occupations, all other",
+  2100, "Lawyers and judges",
+  2300, "Preschool and kindergarten teachers",
+  2340, "Other teachers and instructors",
+  2540, "Teacher assistants",
+  3060, "Physicians and surgeons",
+  3255, "Registered nurses",
+  3600, "Nursing, psychiatric, and home health aides",
+  3850, "Police officers",
+  4020, "Cooks",
+  4030, "Food preparation workers",
+  4050, "Combined food prep and serving, incl. fast food",
+  4110, "Waiters and waitresses",
+  4230, "Maids and housekeeping cleaners",
+  4250, "Grounds maintenance workers",
+  4610, "Personal care aides",
+  4700, "First-line supervisors of retail sales workers",
+  4710, "First-line supervisors of non-retail sales workers",
+  4720, "Cashiers",
+  4760, "Retail salespersons",
+  4850, "Sales representatives, wholesale and manufacturing",
+  5400, "Receptionists and information clerks",
+  5620, "Stock clerks and order fillers",
+  6440, "Pipelayers, plumbers, pipefitters, and steamfitters",
+  9130, "Driver/sales workers and truck drivers"
+)
+
 # wages by occupation
+data %>%
+  filter(year == 2024, incwage > 0, incwage != 999999) %>%
+  group_by(occ2010) %>%
+  summarise(median_wage = median(incwage)) %>%
+  arrange(desc(median_wage)) 
+
 occ_wages <- data %>%
   filter(year == 2024, incwage > 0, incwage != 999999) %>%
   group_by(occ2010) %>%
@@ -391,7 +451,8 @@ occ_wages <- data %>%
 
 
 occ_wages <- occ_wages %>%
-  mutate(occ_label = as.character(occ2010))   
+  left_join(occ_lk, by = "occ2010") %>%
+  mutate(occ_label = coalesce(label, as.character(occ2010)))   # actual job label, code as fallback
 
 ends <- bind_rows(
   slice_max(occ_wages, median_wage, n = 15) %>% mutate(grp = "Highest-paid"),
@@ -426,13 +487,20 @@ ggplot(ends, aes(x = reorder(occ_label, median_wage), y = median_wage, fill = gr
 ggsave("Results/econ4.png", width = 8, height = 6)
 
 # longest work weeks
+data %>%
+  filter(year == 2024, uhrswork > 0) %>%
+  group_by(occ2010) %>%
+  summarise(avg_hours = mean(uhrswork)) %>%
+  arrange(desc(avg_hours))
+
 occ_hours <- data %>%
   filter(year == 2024, uhrswork > 0) %>%
   group_by(occ2010) %>%
   summarise(avg_hours = weighted.mean(uhrswork, perwt),
             n = n(), .groups = "drop") %>%
   filter(n >= 100) %>%
-  mutate(occ_label = as.character(occ2010)) %>%   
+  left_join(occ_lk, by = "occ2010") %>%
+  mutate(occ_label = coalesce(label, as.character(occ2010))) %>%   # actual job label, code as fallback
   slice_max(avg_hours, n = 15)
 
 ggplot(occ_hours, aes(x = reorder(occ_label, avg_hours), y = avg_hours)) +
@@ -460,6 +528,21 @@ ggplot(occ_hours, aes(x = reorder(occ_label, avg_hours), y = avg_hours)) +
 ggsave("Results/econ5.png", width = 8, height = 6)
 
 # family income by state
+fam <- data %>%
+  filter(year == 2024, ftotinc != 9999999) %>%
+  group_by(statefip) %>%
+  summarise(median_family_income = median(ftotinc))
+
+ggplot(fam, aes(reorder(statefip, median_family_income), median_family_income)) +
+  geom_col(fill = "#1B7A4B") + coord_flip() +
+  labs(x = NULL, y = "Median family income")
+
+# to see how children change things, add nchild to the grouping
+fam_kids <- data %>%
+  filter(year == 2024, ftotinc != 9999999) %>%
+  group_by(statefip, nchild) %>%
+  summarise(median_family_income = median(ftotinc), .groups = "drop")
+
 state_lk <- tibble::tribble(
   ~statefip, ~abb,
    1,"AL",  2,"AK",  4,"AZ",  5,"AR",  6,"CA",  8,"CO",  9,"CT", 10,"DE", 11,"DC",
@@ -500,13 +583,13 @@ ggplot(fam, aes(x = reorder(abb, median_family_income), y = median_family_income
 
 ggsave("Results/econ6.png", width = 8, height = 6)
 
-# poverty: 1 vs 2 parent
+# number of kids
 fam_kids <- data %>%
   filter(year == 2024, ftotinc != 9999999) %>%
   group_by(nchild) %>%
   summarise(median_family_income = matrixStats::weightedMedian(ftotinc, perwt), .groups = "drop") %>%
   filter(nchild <= 5) %>%
-  mutate(kids = factor(nchild, labels = c("0","1","2","3","4","5+")))
+  mutate(kids = factor(nchild, labels = c("0","1","2","3","4","5")))
 
 ggplot(fam_kids, aes(x = kids, y = median_family_income)) +
   geom_col(fill = "#1B7A4B") +
@@ -721,7 +804,7 @@ ggplot(sp, aes(x = as.numeric(year), y = pct)) +
     expand = c(0.02, 0)) +
   scale_y_continuous(
     labels = scales::label_percent(scale = 1),
-    expand = c(0.02, 0)) +
+    expand = c(0.02, 0), limits = c(75, 95)) +
   labs(
     title = "Smartphone Ownership, 2016-2024",
     subtitle = "Weighted share of households with a smartphone",
@@ -867,7 +950,7 @@ ggplot(elec, aes(x = reorder(abb, avg_bill), y = avg_bill)) +
   coord_flip() +
   scale_y_continuous(
     labels = scales::label_dollar(),
-    expand = expansion(mult = c(0, 0.04))) +
+    expand = expansion(mult = c(0, 0.04)), limits = c(0, 3000)) +
   labs(
     title = "Average Annual Electricity Cost by State (2024)",
     subtitle = "Weighted mean among households that reported paying for electricity",
@@ -1077,7 +1160,7 @@ ggplot(wfh_pay, aes(x = work_location, y = median_wage, fill = work_location)) +
     guide = "none") +
   scale_y_continuous(
     labels = scales::label_dollar(),
-    expand = expansion(mult = c(0, 0.04))) +
+    expand = expansion(mult = c(0, 0.04)), limits = c(0, 80000)) +
   labs(
     title = "Wage Income of Remote Workers and Commuters (2024)",
     subtitle = "Weighted median wage and salary income among workers with positive earnings",
@@ -1235,7 +1318,7 @@ ggplot(
   geom_col(fill = "#C97703") +
   scale_y_continuous(
     labels = scales::label_comma(),
-    expand = expansion(mult = c(0, 0.04))) +
+    expand = expansion(mult = c(0, 0.04)), limits = c(0, 1000000)) +
   labs(
     title = "Motorcycle, Ferry, and Bicycle Commuters (2024)",
     subtitle = "Weighted estimate of workers by commute mode",
