@@ -115,6 +115,12 @@
   .prog{flex:1;height:6px;background:var(--rule);border-radius:99px;overflow:hidden}
   .prog i{display:block;height:100%;background:var(--ink);width:0;transition:width .3s}
   .ghost{font-family:var(--mono);font-size:11.5px;color:var(--muted);white-space:nowrap}
+  .lightbox{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;background:rgba(20,22,31,.86);padding:30px;cursor:zoom-out}
+  .lightbox.open{display:flex}
+  .lightbox img{max-width:96vw;max-height:92vh;border:2px solid #fff;border-radius:8px;background:#fff;box-shadow:0 20px 60px rgba(0,0,0,.4);cursor:default}
+  .lightbox .lbclose{position:absolute;top:16px;right:20px;font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);border-radius:8px;padding:8px 12px;cursor:pointer}
+  .lightbox .lbclose:hover{background:rgba(255,255,255,.26)}
+  .fig img{cursor:zoom-in}
   @media(max-width:820px){
     :root{--sidebar:0px}
     .side{transform:translateX(-100%);transition:transform .25s;width:250px}
@@ -146,6 +152,7 @@
     <div class="slide" id="stage"></div>
   </div>
 </div>
+<div class="lightbox" id="lightbox"><button class="lbclose" id="lbclose">Close &times;</button><img id="lbimg" src="" alt=""></div>
 <nav class="nav">
   <div class="nav-inner">
     <button class="btn" id="prev">&larr; Prev</button>
@@ -196,9 +203,9 @@ const S = [
  blocks:[
    {h:`<p class="lede">Every question today becomes the same three moves:</p>`},
    {pts:[
-     "<b>filter</b> \u2014 which people? (adults, one year, workers...)",
-     "<b>group_by</b> \u2014 compare across what? (states, years, education...)",
-     "<b>summarise</b> \u2014 what number? (a count, a share, a median...)"]},
+     "<span class=\"tok\">filter</span> \u2014 which people? (adults, one year, workers...)",
+     "<span class=\"tok\">group_by</span> \u2014 compare across what? (states, years, education...)",
+     "<span class=\"tok\">summarise</span> \u2014 what number? (a count, a share, a median...)"]},
    {h:`<p class="lede">For example, <b>how many adults were on Medicaid?</b> We <b>filter</b> to adults
      who are on Medicaid, then <b>summarise</b> by counting them. Want it for every year? Add a
      <b>group_by(year)</b> in the middle and the count comes back once per year</p>`}]},
@@ -227,9 +234,13 @@ data <- read_csv("data/acs00015.csv")`},
      <p class="lede"><b>&lt;- is assignment.</b> It means &ldquo;save the thing on the right into the name on the
      left.&rdquo; So <span class="tok">data &lt;- read_csv(...)</span> runs read_csv and stores the result under
      the name <b>data</b>.</p>
+     <p class="lede"><b>An object</b> is just any named thing R is holding in memory \u2014 it could be a single
+     number, a list of values, a chart, or a whole table. Once something has a name, you can hand that name to
+     a function instead of retyping the thing, and R knows what you mean.</p>
      <p class="lede"><b>data is now an object</b> \u2014 specifically a <i>data frame</i>: one giant table sitting
-     in memory, with a row for every person and a column for every variable. Everything else today is just
-     asking questions of that table.</p>`}]},
+     in memory, with a row for every person and a column for every variable. It's the R version of a
+     spreadsheet \u2014 rows are observations (here, people), columns are variables (age, income, state), and
+     each column holds one type of thing. Everything else today is just asking questions of that table.</p>`}]},
 {sec:"intro", area:"intro", tag:"First look", kick:"Intro", q:"Take a first look",
  blocks:[
    {h:`<p class="lede">Never trust a file you haven't looked at.</p>`},
@@ -296,9 +307,14 @@ write_csv(state_counts, "Results/state_counts.csv")`}]},
 
 data %>% count(sex)     # take 'data' AND THEN count by 'sex'`},
    {h:`<div class="h3">filter() \u2014 pick rows</div>
-     <p class="lede">Keeps rows that pass a test. Commas mean <i>and</i>.
-     <span class="tok">==</span> equals, <span class="tok">&gt;=</span> at least,
-     <span class="tok">&lt;</span> less than, <span class="tok">%in%</span> is one of.</p>`},
+     <p class="lede">Keeps rows that pass a test. The operators you'll use most:</p>
+     <ul class="pts">
+       <li>Commas mean <i>and</i> \u2014 every test must pass.</li>
+       <li><span class="tok">==</span> \u2014 equals</li>
+       <li><span class="tok">&gt;=</span> \u2014 at least (greater than or equal to)</li>
+       <li><span class="tok">&lt;</span> \u2014 less than</li>
+       <li><span class="tok">%in%</span> \u2014 is one of (matches any value in a set)</li>
+     </ul>`},
    {code:`# save each filtered result as its own object
 adults      <- data %>% filter(age >= 18)
 
@@ -311,8 +327,11 @@ young_grads <- data %>% filter(age >= 25, age <= 34, educ >= 10)
 # %in% keeps rows matching ANY value in a set -- here, all public-transit commuters
 transit <- data %>% filter(tranwork %in% c(31, 32, 33, 34, 35, 36, 37))`},
    {h:`<div class="h3">group_by() + summarise() \u2014 one number per group</div>
-     <p class="lede">group_by draws invisible dividers; summarise collapses each group to a single row.
-     Useful summaries: <span class="tok">n()</span> counts rows, plus
+     <p class="lede">group_by draws invisible dividers through the table; summarise then collapses each group
+     down to a single row. As it does, summarise <b>creates a new column</b> in the resulting data frame \u2014
+     the name you write on the left of the <span class="tok">=</span> becomes that column, and its value is
+     the summary of the group. So the result is a fresh, smaller table: one row per group, plus a column for
+     each summary you asked for. Useful summaries: <span class="tok">n()</span> counts rows, plus
      <span class="tok">median(x)</span> and <span class="tok">mean(x)</span>.</p>`},
    {code:`# median personal income at each education level
 income_by_educ <- data %>%
@@ -354,7 +373,7 @@ medicaid_by_year <- data %>%
   summarise(n = n())
 
 print(medicaid_by_year, n = Inf)`}]},
-{sec:"intro", area:"intro", tag:"Weights (optional)", kick:"Intro", q:"Optional: working with the weights",
+{sec:"intro", area:"intro", tag:"Weights", kick:"Intro", q:"Weights",
  blocks:[
    {h:`<div class="note"><b>Remember:</b> the ACS surveys a fraction of the country.
      The unweighted count is how many <b>survey responses</b>. The weighted count is how many <b>Americans</b>.</div>`},
@@ -372,7 +391,7 @@ medicaid_rates <- data %>%
     pct = 100 * weighted.mean(hinscaid == 2, perwt),   # weighted % on Medicaid -- 2 = Medicaid/CHIP
     .groups = "drop")`},
    {h:`<p class="lede"><span class="tok">n</span> is survey responses, <span class="tok">pop</span> is the
-     weighted estimate of Americans, and <span class="tok">pct</span> is the weighted Medicaid rate \u2014 the
+     weighted estimate of Americans, and pct is the weighted Medicaid rate \u2014 the
      number to report.</p>
      <table class="cb"><tr><th>year</th><th class="num">n</th><th class="num">pop</th><th class="num">pct</th></tr>
      <tr><td class="v">2016</td><td class="num">40,164</td><td class="num">324,989,600</td><td class="num">21.5%</td></tr>
@@ -400,7 +419,7 @@ medicaid_rates <- data %>%
      an <b>aes()</b> mapping columns to visual properties, and a <b>geom</b> for what to draw.</p>
      <div class="h3">The grammar of graphics</div>
      <p class="lede">Every plot follows the same template \u2014 fill in the data, the mappings, and a geom:</p>`},
-   {code:`ggplot(data = <DATA>, mapping = aes(<MAPPINGS>)) +
+   {code:`ggplot(data = <DATA>, aes(<MAPPINGS>)) +
   <GEOM_FUNCTION>()`},
    {h:`<p class="lede"><b>aes() mappings</b> connect columns to what you see: <span class="tok">x</span> and
      <span class="tok">y</span>, plus <span class="tok">color</span>, <span class="tok">fill</span>,
@@ -514,7 +533,7 @@ ggsave("Results/medicaid_adults_vs_kids.png", width = 8, height = 5)`}]},
 {sec:"book", area:"book", tag:"Work & money", kick:"Codebook", q:"Codebook — work &amp; money",
  blocks:[{h:`<div class="var"><div class="vh"><span class="vn">empstat</span><span class="vd">Employment status</span></div><table class="codes"><tr><td class="c">0</td><td>N/A</td></tr><tr><td class="c">1</td><td>Employed</td></tr><tr><td class="c">2</td><td>Unemployed</td></tr><tr><td class="c">3</td><td>Not in labor force</td></tr></table></div><div class="var"><div class="vh"><span class="vn">occ2010</span><span class="vd">Occupation (2010 basis)</span></div><p class="vdef">Hundreds of occupation codes; e.g. 2100 = lawyers/judges, 4040 = bartenders, 7800 = bakers. See the full IPUMS OCC2010 list.</p></div><div class="var"><div class="vh"><span class="vn">uhrswork</span><span class="vd">Usual hours worked per week</span></div><p class="vdef">0 = N/A; 99 is a topcode (99+).</p></div><div class="var"><div class="vh"><span class="vn">inctot</span><span class="vd">Total personal income</span></div><p class="vdef">Dollars. Can be negative. 9999999 = N/A.</p></div><div class="var"><div class="vh"><span class="vn">inctot2024</span><span class="vd">Total personal income (2024 dollars)</span></div><p class="vdef">inctot adjusted for inflation to 2024 dollars. This is not a native ACS variable \u2014 we created it while cleaning the original data, so incomes can be compared fairly across survey years. Use it in place of inctot whenever a question spans multiple years.</p></div><div class="var"><div class="vh"><span class="vn">ftotinc</span><span class="vd">Total family income</span></div><p class="vdef">Dollars. 9999999 = N/A.</p></div><div class="var"><div class="vh"><span class="vn">ftotinc2024</span><span class="vd">Total family income (2024 dollars)</span></div><p class="vdef">ftotinc adjusted for inflation to 2024 dollars. Like inctot2024, this is not a native ACS variable \u2014 we created it while cleaning the original data so family incomes can be compared across survey years. Use it in place of ftotinc for any cross-year comparison.</p></div><div class="var"><div class="vh"><span class="vn">incwage</span><span class="vd">Wage and salary income</span></div><p class="vdef">Dollars. 999999 = N/A.</p></div><div class="var"><div class="vh"><span class="vn">poverty</span><span class="vd">Poverty status</span></div><p class="vdef">Family income as a % of the poverty line: 100 = at the line. 0 = N/A; capped at 501.</p></div><div class="var"><div class="vh"><span class="vn">tranwork</span><span class="vd">Means of transportation to work</span></div><table class="codes"><tr><td class="c">10</td><td>Auto, truck, or van</td></tr><tr><td class="c">20</td><td>Motorcycle</td></tr><tr><td class="c">31-37</td><td>Bus / rail / public transit</td></tr><tr><td class="c">39</td><td>Ferryboat</td></tr><tr><td class="c">50</td><td>Bicycle</td></tr><tr><td class="c">60</td><td>Walked only</td></tr><tr><td class="c">80</td><td>Worked at home</td></tr></table></div><div class="var"><div class="vh"><span class="vn">departs</span><span class="vd">Time of departure for work</span></div><p class="vdef">24-hour clock (0730 = 7:30 a.m.). 0 = N/A.</p></div></div>`}]},
 {sec:"book", area:"book", tag:"Home & health", kick:"Codebook", q:"Codebook — home &amp; health",
- blocks:[{h:`<div class="var"><div class="vh"><span class="vn">hcovany</span><span class="vd">Any health insurance coverage</span></div><table class="codes"><tr><td class="c">1</td><td>No health insurance coverage</td></tr><tr><td class="c">2</td><td>With health insurance coverage</td></tr></table></div><div class="var"><div class="vh"><span class="vn">hinscaid</span><span class="vd">Health insurance through Medicaid</span></div><table class="codes"><tr><td class="c">1</td><td>No insurance through Medicaid</td></tr><tr><td class="c">2</td><td>Has insurance through Medicaid</td></tr></table></div><div class="var"><div class="vh"><span class="vn">cismrtphn</span><span class="vd">Smartphone in household</span></div><table class="codes"><tr><td class="c">0</td><td>N/A (GQ)</td></tr><tr><td class="c">1</td><td>Yes</td></tr><tr><td class="c">2</td><td>No</td></tr></table></div><div class="var"><div class="vh"><span class="vn">costelec</span><span class="vd">Annual electricity cost</span></div><p class="vdef">Dollars. Special codes near 9990+ mark included-in-rent / no charge / N/A \u2014 drop before averaging.</p></div>`}]},
+ blocks:[{h:`<div class="var"><div class="vh"><span class="vn">hcovany</span><span class="vd">Any health insurance coverage</span></div><table class="codes"><tr><td class="c">1</td><td>No health insurance coverage</td></tr><tr><td class="c">2</td><td>With health insurance coverage</td></tr></table></div><div class="var"><div class="vh"><span class="vn">hinscaid</span><span class="vd">Health insurance through Medicaid</span></div><table class="codes"><tr><td class="c">1</td><td>No insurance through Medicaid</td></tr><tr><td class="c">2</td><td>Has insurance through Medicaid</td></tr></table></div><div class="var"><div class="vh"><span class="vn">cismrtphn</span><span class="vd">Smartphone in household</span></div><table class="codes"><tr><td class="c">0</td><td>N/A (GQ)</td></tr><tr><td class="c">1</td><td>Yes</td></tr><tr><td class="c">2</td><td>No</td></tr></table></div><div class="var"><div class="vh"><span class="vn">costelec</span><span class="vd">Annual electricity cost</span></div><p class="vdef">Dollars. Special codes near 9990+ mark included-in-rent / no charge / N/A \u2014 drop before averaging.</p></div></div>`}]},
 {sec:"index", area:"intro", tag:"All questions"},
 {sec:"q", area:"health", tag:"Uninsured over time",
  q:"From 2016 to 2024, how has the uninsured rate changed?",
@@ -992,7 +1011,11 @@ document.addEventListener('keydown',e=>{
   if(e.key==='ArrowRight')go(i+1);
   else if(e.key==='ArrowLeft')go(i-1);
 });
+const lightbox=document.getElementById('lightbox');
+const lbimg=document.getElementById('lbimg');
+function closeLightbox(){ lightbox.classList.remove('open'); lbimg.src=''; }
 stage.addEventListener('click',e=>{
+  const im=e.target.closest('.fig img'); if(im){ lbimg.src=im.getAttribute('src'); lbimg.alt=im.getAttribute('alt')||''; lightbox.classList.add('open'); return; }
   const g=e.target.closest('.qcard'); if(g){ go(+g.dataset.goto); return; }
   const b=e.target.closest('.copy'); if(!b)return;
   navigator.clipboard.writeText(decodeURIComponent(b.dataset.code)).then(()=>{
@@ -1000,6 +1023,9 @@ stage.addEventListener('click',e=>{
     setTimeout(()=>{b.textContent='Copy';b.classList.remove('done');},1400);
   });
 });
+lightbox.addEventListener('click',e=>{ if(e.target===lbimg)return; closeLightbox(); });
+document.getElementById('lbclose').onclick=closeLightbox;
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&lightbox.classList.contains('open'))closeLightbox(); });
 buildToc();
 render();
 </script>

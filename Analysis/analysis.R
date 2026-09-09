@@ -6,7 +6,7 @@ install.packages("tidyverse")
 library(tidyverse)
 
 # load the data
-data <- read_csv("data/acs00015.csv")
+data = read_csv("data/acs00015.csv")
 
 ##########################################################
 nrow(data)
