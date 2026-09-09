@@ -174,24 +174,22 @@ const AREA_NAME = {
 const S = [
 {sec:"intro", area:"intro", tag:"Welcome", hero:true,
  blocks:[{h:`<div class="hero">Cato Intern Coding Lab</div>
-   <div class="hero-sub">Turning the American Community Survey into policy answers</div>
+   <div class="hero-sub">Painting a detailed portrait of America's communities</div>
    <p class="lede">Use the contents on the left to jump between the intro, the codebook, and the questions.
    Arrow keys move one slide at a time.</p>`}]},
 {sec:"intro", area:"intro", tag:"What is the ACS?", kick:"Intro", q:"What is the ACS?",
  blocks:[
    {h:`<p class="lede">The <b>American Community Survey</b> is the Census Bureau's largest annual survey \u2014
    roughly 3.5 million households a year, asked in detail about work, income, family, health coverage,
-   housing, schooling, and how they get around. It is where numbers like the poverty rate, the uninsured
-   rate, commute times, and where immigrants settle actually come from.</p>
-   <p class="lede">Policy researchers lean on it constantly, because almost any question of the form
-   <i>&ldquo;how does X relate to Y, for group Z?&rdquo;</i> has an answer buried in it. A few examples a policy
-   analyst might actually ask:</p>`},
+   housing, schooling, and how they get around. It is where we get numbers like the poverty rate, the uninsured
+   rate, labor force participation, and where immigrants settle.</p>
+   <p class="lede">A few examples a policy analyst might ask:</p>`},
    {pts:[
      "How has the share of people without health insurance changed over the past decade?",
      "Does personal income really rise with education \u2014 and by how much?",
      "Which states have the largest foreign-born populations, and how fast are they growing?",
      "How much more common is working from home now than before the pandemic?",
-     "What share of children live in families below the poverty line?"]},
+     "What share of children live in households below the poverty line?"]},
    {h:`<div class="h3">And here's the kind of thing you can build</div>
      <p class="lede">Real charts made from ACS microdata:</p>
      <div class="figrow">
@@ -212,9 +210,9 @@ const S = [
 {sec:"intro", area:"intro", tag:"Set up", kick:"Intro", q:"Set up your workspace",
  blocks:[
    {pts:[
-     "<b>Working directory</b> \u2014 the folder R reads from and writes to. Set it once and your file paths stay short.",
-     "<b>Packages are a toolkit</b> \u2014 bundles of ready-made functions someone else wrote. Install a package once with install.packages(), then load it each session with library() to get its tools.",
-     "<b>read_csv()</b> \u2014 reads your data file into an object you can work with."]},
+     "<b>Working directory</b> \u2014 the folder R reads from and writes to. ",
+     "<b>Packages are a toolkit</b> \u2014 bundles of ready-made functions someone else wrote.",
+     "<b>read_csv()</b> \u2014 turns your data file into an object you can work with."]},
    {code:`# Set working directory
 setwd("C:/Users/CarolXu/OneDrive - Cato Institute/Desktop/Intern Coding Lab")
 
@@ -234,13 +232,9 @@ data <- read_csv("data/acs00015.csv")`},
      <p class="lede"><b>&lt;- is assignment.</b> It means &ldquo;save the thing on the right into the name on the
      left.&rdquo; So <span class="tok">data &lt;- read_csv(...)</span> runs read_csv and stores the result under
      the name <b>data</b>.</p>
-     <p class="lede"><b>An object</b> is just any named thing R is holding in memory \u2014 it could be a single
-     number, a list of values, a chart, or a whole table. Once something has a name, you can hand that name to
-     a function instead of retyping the thing, and R knows what you mean.</p>
      <p class="lede"><b>data is now an object</b> \u2014 specifically a <i>data frame</i>: one giant table sitting
      in memory, with a row for every person and a column for every variable. It's the R version of a
-     spreadsheet \u2014 rows are observations (here, people), columns are variables (age, income, state), and
-     each column holds one type of thing. Everything else today is just asking questions of that table.</p>`}]},
+     spreadsheet \u2014 rows are observations (individual people), and columns are variables (age, income, state)</p>`}]},
 {sec:"intro", area:"intro", tag:"First look", kick:"Intro", q:"Take a first look",
  blocks:[
    {h:`<p class="lede">Never trust a file you haven't looked at.</p>`},
@@ -360,7 +354,7 @@ uninsured_by_state %>% arrange(desc(pct))`},
      print them all with <span class="tok">n = Inf</span>:</p>`},
    {code:`print(uninsured_by_state, n = Inf)`},
    {h:`<div class="h3">Putting it together: adults on Medicaid</div>
-     <p class="lede">The example from the start of the lab \u2014 filter, then count; add group_by(year) for a trend:</p>`},
+     <p class="lede">filter, then count; add group_by(year) for a trend:</p>`},
    {code:`# In 2024: how many adults were on Medicaid?
 data %>%
   filter(year == 2024, age >= 18, hinscaid == 2) %>%   # hinscaid 2 = Medicaid/CHIP
@@ -391,8 +385,7 @@ medicaid_rates <- data %>%
     pct = 100 * weighted.mean(hinscaid == 2, perwt),   # weighted % on Medicaid -- 2 = Medicaid/CHIP
     .groups = "drop")`},
    {h:`<p class="lede"><span class="tok">n</span> is survey responses, <span class="tok">pop</span> is the
-     weighted estimate of Americans, and pct is the weighted Medicaid rate \u2014 the
-     number to report.</p>
+     weighted estimate of Americans, and pct is the weighted Medicaid rate.</p>
      <table class="cb"><tr><th>year</th><th class="num">n</th><th class="num">pop</th><th class="num">pct</th></tr>
      <tr><td class="v">2016</td><td class="num">40,164</td><td class="num">324,989,600</td><td class="num">21.5%</td></tr>
      <tr><td class="v">2017</td><td class="num">39,928</td><td class="num">330,109,059</td><td class="num">21.5%</td></tr>
@@ -419,7 +412,7 @@ medicaid_rates <- data %>%
      an <b>aes()</b> mapping columns to visual properties, and a <b>geom</b> for what to draw.</p>
      <div class="h3">The grammar of graphics</div>
      <p class="lede">Every plot follows the same template \u2014 fill in the data, the mappings, and a geom:</p>`},
-   {code:`ggplot(data = <DATA>, aes(<MAPPINGS>)) +
+   {code:`ggplot(<DATA>, aes(<MAPPINGS>)) +
   <GEOM_FUNCTION>()`},
    {h:`<p class="lede"><b>aes() mappings</b> connect columns to what you see: <span class="tok">x</span> and
      <span class="tok">y</span>, plus <span class="tok">color</span>, <span class="tok">fill</span>,
@@ -528,7 +521,7 @@ ggplot(medicaid_grp, aes(x = as.numeric(year), y = n, color = group)) +
     panel.background = element_rect(fill = "white", color = NA))
 
 ggsave("Results/medicaid_adults_vs_kids.png", width = 8, height = 5)`}]},
-{sec:"book", area:"book", tag:"Demographics", kick:"Codebook", q:"Codebook — who each person is",
+{sec:"book", area:"book", tag:"Demographics", kick:"Codebook", q:"Codebook — demographics",
  blocks:[{h:`<div class="var"><div class="vh"><span class="vn">year</span><span class="vd">Census/survey year</span></div><p class="vdef">Survey year. This extract has one ACS sample per year, 2016 through 2024.</p></div><div class="var"><div class="vh"><span class="vn">statefip</span><span class="vd">State (FIPS code)</span></div><table class="codes"><tr><td class="c">06</td><td>California</td></tr><tr><td class="c">36</td><td>New York</td></tr><tr><td class="c">48</td><td>Texas</td></tr></table><p class="vdef">Full state list is in the IPUMS codebook; TX=48, CA=6, NY=36 are the ones used in the questions.</p></div><div class="var"><div class="vh"><span class="vn">sex</span><span class="vd">Sex</span></div><table class="codes"><tr><td class="c">1</td><td>Male</td></tr><tr><td class="c">2</td><td>Female</td></tr></table></div><div class="var"><div class="vh"><span class="vn">age</span><span class="vd">Age</span></div><p class="vdef">Age in years. 000 = under 1; 999 = missing.</p></div><div class="var"><div class="vh"><span class="vn">marst</span><span class="vd">Marital status</span></div><table class="codes"><tr><td class="c">1</td><td>Married, spouse present</td></tr><tr><td class="c">2</td><td>Married, spouse absent</td></tr><tr><td class="c">3</td><td>Separated</td></tr><tr><td class="c">4</td><td>Divorced</td></tr><tr><td class="c">5</td><td>Widowed</td></tr><tr><td class="c">6</td><td>Never married/single</td></tr></table></div><div class="var"><div class="vh"><span class="vn">bpl</span><span class="vd">Birthplace</span></div><p class="vdef">Codes below 100 are U.S. states/territories; 100 and up are foreign countries. So bpl &gt;= 100 means foreign-born.</p></div><div class="var"><div class="vh"><span class="vn">citizen</span><span class="vd">Citizenship status</span></div><table class="codes"><tr><td class="c">0</td><td>N/A (born in the U.S.)</td></tr><tr><td class="c">1</td><td>Born abroad of American parents</td></tr><tr><td class="c">2</td><td>Naturalized citizen</td></tr><tr><td class="c">3</td><td>Not a citizen</td></tr></table></div><div class="var"><div class="vh"><span class="vn">yrimmig</span><span class="vd">Year of immigration</span></div><p class="vdef">Four-digit year the person came to the U.S. 0 = N/A (U.S. born).</p></div><div class="var"><div class="vh"><span class="vn">educ</span><span class="vd">Educational attainment</span></div><table class="codes"><tr><td class="c">00</td><td>N/A or no schooling</td></tr><tr><td class="c">01</td><td>Nursery school to grade 4</td></tr><tr><td class="c">02</td><td>Grade 5, 6, 7, or 8</td></tr><tr><td class="c">03</td><td>Grade 9</td></tr><tr><td class="c">04</td><td>Grade 10</td></tr><tr><td class="c">05</td><td>Grade 11</td></tr><tr><td class="c">06</td><td>Grade 12 (high school)</td></tr><tr><td class="c">07</td><td>1 year of college</td></tr><tr><td class="c">08</td><td>2 years of college</td></tr><tr><td class="c">09</td><td>3 years of college</td></tr><tr><td class="c">10</td><td>4 years of college (bachelor's)</td></tr><tr><td class="c">11</td><td>5+ years of college</td></tr></table><p class="vdef">Roughly, educ &gt;= 10 means a bachelor's degree or higher.</p></div>`}]},
 {sec:"book", area:"book", tag:"Work & money", kick:"Codebook", q:"Codebook — work &amp; money",
  blocks:[{h:`<div class="var"><div class="vh"><span class="vn">empstat</span><span class="vd">Employment status</span></div><table class="codes"><tr><td class="c">0</td><td>N/A</td></tr><tr><td class="c">1</td><td>Employed</td></tr><tr><td class="c">2</td><td>Unemployed</td></tr><tr><td class="c">3</td><td>Not in labor force</td></tr></table></div><div class="var"><div class="vh"><span class="vn">occ2010</span><span class="vd">Occupation (2010 basis)</span></div><p class="vdef">Hundreds of occupation codes; e.g. 2100 = lawyers/judges, 4040 = bartenders, 7800 = bakers. See the full IPUMS OCC2010 list.</p></div><div class="var"><div class="vh"><span class="vn">uhrswork</span><span class="vd">Usual hours worked per week</span></div><p class="vdef">0 = N/A; 99 is a topcode (99+).</p></div><div class="var"><div class="vh"><span class="vn">inctot</span><span class="vd">Total personal income</span></div><p class="vdef">Dollars. Can be negative. 9999999 = N/A.</p></div><div class="var"><div class="vh"><span class="vn">inctot2024</span><span class="vd">Total personal income (2024 dollars)</span></div><p class="vdef">inctot adjusted for inflation to 2024 dollars. This is not a native ACS variable \u2014 we created it while cleaning the original data, so incomes can be compared fairly across survey years. Use it in place of inctot whenever a question spans multiple years.</p></div><div class="var"><div class="vh"><span class="vn">ftotinc</span><span class="vd">Total family income</span></div><p class="vdef">Dollars. 9999999 = N/A.</p></div><div class="var"><div class="vh"><span class="vn">ftotinc2024</span><span class="vd">Total family income (2024 dollars)</span></div><p class="vdef">ftotinc adjusted for inflation to 2024 dollars. Like inctot2024, this is not a native ACS variable \u2014 we created it while cleaning the original data so family incomes can be compared across survey years. Use it in place of ftotinc for any cross-year comparison.</p></div><div class="var"><div class="vh"><span class="vn">incwage</span><span class="vd">Wage and salary income</span></div><p class="vdef">Dollars. 999999 = N/A.</p></div><div class="var"><div class="vh"><span class="vn">poverty</span><span class="vd">Poverty status</span></div><p class="vdef">Family income as a % of the poverty line: 100 = at the line. 0 = N/A; capped at 501.</p></div><div class="var"><div class="vh"><span class="vn">tranwork</span><span class="vd">Means of transportation to work</span></div><table class="codes"><tr><td class="c">10</td><td>Auto, truck, or van</td></tr><tr><td class="c">20</td><td>Motorcycle</td></tr><tr><td class="c">31-37</td><td>Bus / rail / public transit</td></tr><tr><td class="c">39</td><td>Ferryboat</td></tr><tr><td class="c">50</td><td>Bicycle</td></tr><tr><td class="c">60</td><td>Walked only</td></tr><tr><td class="c">80</td><td>Worked at home</td></tr></table></div><div class="var"><div class="vh"><span class="vn">departs</span><span class="vd">Time of departure for work</span></div><p class="vdef">24-hour clock (0730 = 7:30 a.m.). 0 = N/A.</p></div></div>`}]},
