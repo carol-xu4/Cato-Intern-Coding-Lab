@@ -197,16 +197,16 @@ const S = [
        <figure class="fig"><img src="Results/one_undoc_parent_composition.png" alt="Households with one undocumented parent"><figcaption>Households with one undocumented parent</figcaption></figure>
        <figure class="fig"><img src="Results/ACS_CA_uninsured.png" alt="Uninsured Rate in California"><figcaption>Uninsured Rate in California</figcaption></figure>
      </div>`}]},
-{sec:"intro", area:"intro", tag:"Three steps", kick:"Intro", q:"Three steps for every question",
+{sec:"intro", area:"intro", tag:"Three steps", kick:"Intro", q:"Three steps to remember",
  blocks:[
    {h:`<p class="lede">Every question today becomes the same three moves:</p>`},
    {pts:[
      "<span class=\"tok\">filter</span> \u2014 which people? (adults, one year, workers...)",
      "<span class=\"tok\">group_by</span> \u2014 compare across what? (states, years, education...)",
      "<span class=\"tok\">summarise</span> \u2014 what number? (a count, a share, a median...)"]},
-   {h:`<p class="lede">For example, <b>how many adults were on Medicaid?</b> We <b>filter</b> to adults
+   {h:`<p class="lede">For example, <b>how many adults are on Medicaid?</b> We <b>filter</b> to adults
      who are on Medicaid, then <b>summarise</b> by counting them. Want it for every year? Add a
-     <b>group_by(year)</b> in the middle and the count comes back once per year</p>`}]},
+     <b>group_by(year)</b> in the middle to see the trend</p>`}]},
 {sec:"intro", area:"intro", tag:"Set up", kick:"Intro", q:"Set up your workspace",
  blocks:[
    {pts:[
@@ -320,13 +320,12 @@ young_grads <- data %>% filter(age >= 25, age <= 34, educ >= 10)
 
 # %in% keeps rows matching ANY value in a set -- here, all public-transit commuters
 transit <- data %>% filter(tranwork %in% c(31, 32, 33, 34, 35, 36, 37))`},
-   {h:`<div class="h3">group_by() + summarise() \u2014 one number per group</div>
-     <p class="lede">group_by draws invisible dividers through the table; summarise then collapses each group
-     down to a single row. As it does, summarise <b>creates a new column</b> in the resulting data frame \u2014
-     the name you write on the left of the <span class="tok">=</span> becomes that column, and its value is
-     the summary of the group. So the result is a fresh, smaller table: one row per group, plus a column for
-     each summary you asked for. Useful summaries: <span class="tok">n()</span> counts rows, plus
-     <span class="tok">median(x)</span> and <span class="tok">mean(x)</span>.</p>`},
+   {h:`<div class="h3">group_by() + summarise() — one number per group</div>
+     <p class="lede"><span class="tok">group_by()</span> draws invisible dividers through the table;
+     <span class="tok">summarise()</span> collapses each group to a single row and <b>creates a new column</b>. 
+     Useful summaries:
+     <span class="tok">n()</span> counts rows, plus <span class="tok">median(x)</span> and
+     <span class="tok">mean(x)</span>.</p>`},
    {code:`# median personal income at each education level
 income_by_educ <- data %>%
   filter(inctot != 9999999) %>%      # drop the "N/A" income code
