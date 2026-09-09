@@ -933,7 +933,6 @@ function render(){
     let qs=S.filter(x=>x.sec==='q');
     let areas=new Set(qs.map(x=>x.area));
     html+='<div class="kick">Questions</div><h1 class="q">The question bank</h1>';
-    html+='<p class="lede">'+qs.length+' questions across '+areas.size+' policy areas. Click any to jump \u2014 or use the contents on the left.</p>';
     html+='<div class="qgrid">';
     S.forEach((x,idx)=>{ if(x.sec==='q'){ html+='<button class="qcard" style="--qa:var('+AC[x.area]+')" data-goto="'+idx+'"><div class="qa">'+AREA_NAME[x.area]+'</div><div class="qq">'+x.q+'</div></button>'; }});
     html+='</div>';
