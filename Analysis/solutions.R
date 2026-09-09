@@ -247,11 +247,6 @@ data %>%
   filter(age >= 25, age <= 34, occ2010 == 2100, degfieldd == 5501) %>%   # 2100 = lawyers, judges
   summarise(n = n())
 
-# Lawyers with an economics degree (adults 25-34)
-data %>%
-  filter(age >= 25, age <= 34, occ2010 == 2100, degfieldd == 5501) %>%   # 2100 = lawyers/judges, 5501 = economics
-  summarise(n = n())
-
 # weighted: young lawyers with an economics degree vs. any other field
 lawyer_degree <- data %>%
   filter(year == 2024, age >= 25, age <= 34, occ2010 == 2100, degfieldd > 0) %>%  # 2100 = lawyers/judges; keep those reporting a degree field
@@ -284,7 +279,6 @@ ggplot(lawyer_degree, aes(x = reorder(field, lawyers), y = lawyers, fill = field
     panel.background = element_rect(fill = "white", color = NA))
 
 ggsave("Results/education3.png", width = 8, height = 6)
-
 
 ## GENERAL ECONOMICS --------------------------------------------------------------------------------
 # wages over time
@@ -433,7 +427,8 @@ occ_lk <- tibble::tribble(
   5620, "Stock clerks and order fillers",
   6440, "Pipelayers, plumbers, pipefitters, and steamfitters",
   9130, "Driver/sales workers and truck drivers"
-)
+) %>%
+  dplyr::mutate(occ2010 = as.integer(occ2010))
 
 # wages by occupation
 data %>%
@@ -448,7 +443,6 @@ occ_wages <- data %>%
   summarise(median_wage = matrixStats::weightedMedian(incwage, perwt),
             n = n(), .groups = "drop") %>%
   filter(n >= 100)                     # drop tiny, noisy occupation cells
-
 
 occ_wages <- occ_wages %>%
   left_join(occ_lk, by = "occ2010") %>%
@@ -495,37 +489,15 @@ data %>%
 
 occ_hours <- data %>%
   filter(year == 2024, uhrswork > 0) %>%
+  mutate(occ2010 = as.integer(occ2010)) %>%
   group_by(occ2010) %>%
-  summarise(avg_hours = weighted.mean(uhrswork, perwt),
-            n = n(), .groups = "drop") %>%
-  filter(n >= 100) %>%
+  summarise(avg_hours = weighted.mean(uhrswork, perwt), n = n(), .groups = "drop") %>%
+  filter(n >= 100) %>%              # <- after summarise, n is now a real column
   left_join(occ_lk, by = "occ2010") %>%
-  mutate(occ_label = coalesce(label, as.character(occ2010))) %>%   # actual job label, code as fallback
+  mutate(occ_label = coalesce(label, as.character(occ2010))) %>%
   slice_max(avg_hours, n = 15)
 
-ggplot(occ_hours, aes(x = reorder(occ_label, avg_hours), y = avg_hours)) +
-  geom_col(fill = "#1B7A4B") +
-  scale_y_continuous(expand = expansion(mult = c(0, 0.04))) +
-  labs(
-    title = "Occupations with the Longest Work Weeks (2024)",
-    subtitle = "Weighted mean usual hours per week; occupations with 100+ sample workers",
-    x = NULL, y = "Hours per week",
-    caption = "Source: ACS PUMS via IPUMS") +
-  theme_minimal() +
-  theme(
-    plot.title = element_text(size = 14, face = "bold", hjust = 0, color = "black"),
-    plot.subtitle = element_text(size = 11, color = "gray40", hjust = 0, margin = margin(b = 12)),
-    panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(),
-    panel.grid.major.x = element_line(color = "gray90", linewidth = 0.5),
-    axis.line = element_blank(), axis.ticks = element_blank(),
-    axis.text = element_text(size = 8, color = "gray40"),
-    axis.title.x = element_text(size = 10, color = "gray40"),
-    plot.caption = element_text(size = 8, color = "gray40", hjust = 0),
-    plot.caption.position = "plot", plot.title.position = "plot",
-    plot.background = element_rect(fill = "white", color = NA),
-    panel.background = element_rect(fill = "white", color = NA))
-
-ggsave("Results/econ5.png", width = 8, height = 6)
+print(occ_hours)
 
 # family income by state
 fam <- data %>%
@@ -536,12 +508,6 @@ fam <- data %>%
 ggplot(fam, aes(reorder(statefip, median_family_income), median_family_income)) +
   geom_col(fill = "#1B7A4B") + coord_flip() +
   labs(x = NULL, y = "Median family income")
-
-# to see how children change things, add nchild to the grouping
-fam_kids <- data %>%
-  filter(year == 2024, ftotinc != 9999999) %>%
-  group_by(statefip, nchild) %>%
-  summarise(median_family_income = median(ftotinc), .groups = "drop")
 
 state_lk <- tibble::tribble(
   ~statefip, ~abb,
@@ -590,6 +556,8 @@ fam_kids <- data %>%
   summarise(median_family_income = matrixStats::weightedMedian(ftotinc, perwt), .groups = "drop") %>%
   filter(nchild <= 5) %>%
   mutate(kids = factor(nchild, labels = c("0","1","2","3","4","5")))
+
+print(fam_kids)
 
 ggplot(fam_kids, aes(x = kids, y = median_family_income)) +
   geom_col(fill = "#1B7A4B") +
@@ -667,7 +635,7 @@ arrival <- data %>%
 
 ggplot(arrival, aes(x = arrived, y = median_income, fill = arrived)) +
   geom_col(width = 0.65) +
-  scale_fill_manual(values = c("1999 or earlier" = "#3043B4", "2000 or later" = "#C97703"),
+  scale_fill_manual(values = c("1999 or earlier" = "#3043B4", "2000 or later" = "#B23A48"),
                     guide = "none") +
   scale_y_continuous(labels = scales::label_dollar(), expand = expansion(mult = c(0, 0.04))) +
   labs(
@@ -1033,9 +1001,30 @@ data %>%
   summarise(avg_departs = mean(departs)) %>%
   arrange(avg_departs)
 
+occ_lk <- tibble::tribble(
+  ~occ2010, ~label,
+    10, "Chief executives and legislators",
+    20, "General and operations managers",
+   120, "Financial managers",
+   220, "Construction managers",
+   230, "Education administrators",
+   430, "Miscellaneous managers",
+  2310, "Elementary and middle school teachers",
+  2320, "Secondary school teachers",
+  3060, "Physicians and surgeons",
+  4250, "Grounds maintenance workers",
+  4850, "Sales representatives, wholesale and manufacturing",
+  5000, "First-line supervisors of office and administrative support workers",
+  5700, "Secretaries and administrative assistants",
+  6260, "Construction laborers",
+  6355, "Electricians"
+) %>%
+  dplyr::mutate(occ2010 = as.integer(occ2010))
+
 early <- data %>%
   filter(year == 2024, departs > 0) %>%
   mutate(
+    occ2010 = as.integer(occ2010),                                 # match occ_lk key
     depart_minutes = (departs %/% 100) * 60 + departs %% 100) %>%  # HHMM to minutes
   group_by(occ2010) %>%
   summarise(
@@ -1044,8 +1033,9 @@ early <- data %>%
     .groups = "drop") %>%
   filter(n >= 100) %>%
   slice_min(avg_minutes, n = 15, with_ties = FALSE) %>%
+  left_join(occ_lk, by = "occ2010") %>%                            # bring in labels
   mutate(
-    occ_label = as.character(occ2010),
+    occ_label = coalesce(label, as.character(occ2010)),            # label, fall back to code
     avg_time = sprintf(
       "%d:%02d a.m.",
       floor(avg_minutes / 60),
@@ -1192,6 +1182,26 @@ data %>%
   summarise(median_wage = median(incwage)) %>%
   arrange(desc(median_wage))
 
+occ_lk <- tibble::tribble(
+  ~occ2010, ~label,
+   430, "Miscellaneous managers",
+  3255, "Registered nurses",
+  3600, "Nursing, psychiatric, and home health aides",
+  4020, "Cooks",
+  4220, "Janitors and building cleaners",
+  4700, "First-line supervisors of retail sales workers",
+  4760, "Retail salespersons",
+  5120, "Bookkeeping, accounting, and auditing clerks",
+  5240, "Customer service representatives",
+  5620, "Stock clerks and order fillers",
+  5700, "Secretaries and administrative assistants",
+  6260, "Construction laborers",
+  8965, "Miscellaneous production workers, including semiconductor processors",
+  9130, "Driver/sales workers and truck drivers",
+  9620, "Laborers and freight, stock, and material movers, hand"
+) %>%
+  dplyr::mutate(occ2010 = as.integer(occ2010))
+
 no_ba_pay <- data %>%
   filter(
     year == 2024,
@@ -1199,6 +1209,7 @@ no_ba_pay <- data %>%
     educ < 10,
     incwage > 0,
     incwage != 999999) %>%
+  mutate(occ2010 = as.integer(occ2010)) %>%          # match occ_lk key
   group_by(occ2010) %>%
   summarise(
     median_wage = matrixStats::weightedMedian(incwage, perwt),
@@ -1206,7 +1217,8 @@ no_ba_pay <- data %>%
     .groups = "drop") %>%
   filter(n >= 100) %>%
   slice_max(median_wage, n = 15, with_ties = FALSE) %>%
-  mutate(occ_label = as.character(occ2010))
+  left_join(occ_lk, by = "occ2010") %>%              # bring in labels
+  mutate(occ_label = coalesce(label, as.character(occ2010)))
 
 ggplot(no_ba_pay, aes(x = reorder(occ_label, median_wage), y = median_wage)) +
   geom_col(fill = "#C97703") +
@@ -1312,6 +1324,8 @@ rare_commutes <- data %>%
   group_by(mode) %>%
   summarise(commuters = sum(perwt), .groups = "drop")
 
+print(rare_commutes)
+
 ggplot(
   rare_commutes,
   aes(x = reorder(mode, commuters), y = commuters)) +
@@ -1343,6 +1357,26 @@ ggplot(
 
 ggsave("Results/bonus6a.png", width = 8, height = 6)
 
+occ_lk <- tibble::tribble(
+  ~occ2010, ~label,
+    50, "Marketing and sales managers",
+   230, "Education administrators",
+   800, "Accountants and auditors",
+  1020, "Software developers, applications and systems software",
+  2100, "Lawyers, and judges, magistrates, and other judicial workers",
+  2200, "Postsecondary teachers",
+  2540, "Teacher assistants",
+  2630, "Designers",
+  3600, "Nursing, psychiatric, and home health aides",
+  3930, "Security guards and gaming surveillance officers",
+  4020, "Cooks",
+  4220, "Janitors and building cleaners",
+  4230, "Maids and housekeeping cleaners",
+  4610, "Personal care aides",
+  5940, "Miscellaneous office and administrative support workers, including desktop publishers"
+) %>%
+  dplyr::mutate(occ2010 = as.integer(occ2010))
+
 transit_occ <- data %>%
   filter(year == 2024, tranwork > 0) %>%
   group_by(occ2010) %>%
@@ -1353,7 +1387,10 @@ transit_occ <- data %>%
     .groups = "drop") %>%
   filter(n >= 100) %>%
   slice_max(pct_transit, n = 15, with_ties = FALSE) %>%
-  mutate(occ_label = as.character(occ2010))
+  left_join(occ_lk, by = "occ2010") %>%
+    mutate(occ_label = coalesce(label, as.character(occ2010)))
+
+print(transit_occ)
 
 ggplot(
   transit_occ,
