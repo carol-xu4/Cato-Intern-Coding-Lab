@@ -158,7 +158,6 @@
     <button class="btn" id="prev">&larr; Prev</button>
     <div class="prog"><i id="bar"></i></div>
     <button class="btn" id="next">Next &rarr;</button>
-    <span class="ghost">&larr; / &rarr; move one slide</span>
   </div>
 </nav>
 <script>
@@ -174,9 +173,7 @@ const AREA_NAME = {
 const S = [
 {sec:"intro", area:"intro", tag:"Welcome", hero:true,
  blocks:[{h:`<div class="hero">Cato Intern Coding Lab</div>
-   <div class="hero-sub">Painting a detailed portrait of America's communities</div>
-   <p class="lede">Use the contents on the left to jump between the intro, the codebook, and the questions.
-   Arrow keys move one slide at a time.</p>`}]},
+   <div class="hero-sub">Painting a detailed portrait of America's communities</div>`}]},
 {sec:"intro", area:"intro", tag:"What is the ACS?", kick:"Intro", q:"What is the ACS?",
  blocks:[
    {h:`<p class="lede">The <b>American Community Survey</b> is the Census Bureau's largest annual survey \u2014
@@ -196,6 +193,9 @@ const S = [
        <figure class="fig"><img src="Results/medicaid_undoc_parents_vs_children.png" alt="Medicaid: children vs. undocumented parents"><figcaption>Medicaid: children vs. undocumented parents</figcaption></figure>
        <figure class="fig"><img src="Results/one_undoc_parent_composition.png" alt="Households with one undocumented parent"><figcaption>Households with one undocumented parent</figcaption></figure>
        <figure class="fig"><img src="Results/ACS_CA_uninsured.png" alt="Uninsured Rate in California"><figcaption>Uninsured Rate in California</figcaption></figure>
+       <figure class="fig"><img src="Results/ACS_age_density_4groups.gif" alt="Age distribution by group"><figcaption>Age distribution by group</figcaption></figure>
+       <figure class="fig"><img src="Results/median_ftotinc_by_immig_status.png" alt="Median family income by immigration status"><figcaption>Median family income by immigration status</figcaption></figure>
+       <figure class="fig"><img src="Results/ca_drive_to_work_by_year.png" alt="Driving to work in California, by year"><figcaption>Driving to work in California, by year</figcaption></figure>
      </div>`}]},
 {sec:"intro", area:"intro", tag:"Three steps", kick:"Intro", q:"Three steps to remember",
  blocks:[
