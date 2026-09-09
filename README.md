@@ -1,6 +1,6 @@
 # Cato Intern Coding Lab 2026
 
-**Working with the American Community Survey for policy analysis**
+**Working with the American Community Survey**
 
 _30 June 2026_
 
