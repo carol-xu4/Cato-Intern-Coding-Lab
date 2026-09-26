@@ -187,6 +187,176 @@ const S = [
      "Which states have the largest foreign-born populations, and how fast are they growing?",
      "How much more common is working from home now than before the pandemic?",
      "What share of children live in households below the poverty line?"]},
+   {h:`<div class="h3">How an ACS extract is structured</div>
+     <div style="overflow-x:auto;margin:14px 0;max-width:640px">
+     <div style="background:#FFFFFF;border-radius:8px;overflow:hidden;border:1.5px solid var(--rule);font-family:'Segoe UI',Calibri,Arial,sans-serif">
+       <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:#F3F3F3;border-bottom:1px solid #D4D4D4">
+         <span style="font-size:12px;color:#3B3A39">acs_extract_2010_2024.csv</span>
+       </div>
+       <div style="display:flex;align-items:center;gap:10px;padding:5px 10px;background:#FFFFFF;border-bottom:1px solid #D4D4D4">
+         <span style="font-size:12px;font-weight:600;color:#3B3A39;min-width:34px">G2</span>
+         <span style="color:#D4D4D4">|</span>
+         <span style="font-size:12px;color:#3B3A39;font-family:Consolas,monospace">52000</span>
+       </div>
+       <table style="border-collapse:collapse;table-layout:fixed;font-size:12px;color:#1A1A1A">
+         <colgroup>
+           <col style="width:28px"><col style="width:54px"><col style="width:42px"><col style="width:40px"><col style="width:42px">
+           <col style="width:48px"><col style="width:60px"><col style="width:64px"><col style="width:60px"><col style="width:52px">
+         </colgroup>
+         <thead>
+           <tr style="background:#F3F3F3">
+             <th style="border:1px solid #D4D4D4;padding:4px;font-weight:400;color:#616161"></th>
+             <th style="border:1px solid #D4D4D4;padding:4px;font-weight:400;color:#616161">A</th>
+             <th style="border:1px solid #D4D4D4;padding:4px;font-weight:400;color:#616161">B</th>
+             <th style="border:1px solid #D4D4D4;padding:4px;font-weight:400;color:#616161">C</th>
+             <th style="border:1px solid #D4D4D4;padding:4px;font-weight:400;color:#616161">D</th>
+             <th style="border:1px solid #D4D4D4;padding:4px;font-weight:400;color:#616161">E</th>
+             <th style="border:1px solid #D4D4D4;padding:4px;font-weight:400;color:#616161">F</th>
+             <th style="border:1px solid #D4D4D4;padding:4px;font-weight:400;color:#616161;background:#CAEAD8">G</th>
+             <th style="border:1px solid #D4D4D4;padding:4px;font-weight:400;color:#616161">H</th>
+             <th style="border:1px solid #D4D4D4;padding:4px;font-weight:400;color:#616161">I</th>
+           </tr>
+         </thead>
+         <tbody>
+           <tr style="background:#F3F3F3">
+             <td style="border:1px solid #D4D4D4;padding:4px;text-align:center;color:#616161">1</td>
+             <td style="border:1px solid #D4D4D4;padding:4px;font-weight:600;background:#FFFFFF">year</td>
+             <td style="border:1px solid #D4D4D4;padding:4px;font-weight:600;background:#FFFFFF">age</td>
+             <td style="border:1px solid #D4D4D4;padding:4px;font-weight:600;background:#FFFFFF">sex</td>
+             <td style="border:1px solid #D4D4D4;padding:4px;font-weight:600;background:#FFFFFF">race</td>
+             <td style="border:1px solid #D4D4D4;padding:4px;font-weight:600;background:#FFFFFF">marst</td>
+             <td style="border:1px solid #D4D4D4;padding:4px;font-weight:600;background:#FFFFFF">empstat</td>
+             <td style="border:1px solid #D4D4D4;padding:4px;font-weight:600;background:#FFFFFF">inctot</td>
+             <td style="border:1px solid #D4D4D4;padding:4px;font-weight:600;background:#FFFFFF">hcovany</td>
+             <td style="border:1px solid #D4D4D4;padding:4px;font-weight:600;background:#FFFFFF">perwt</td>
+           </tr>
+           <tr>
+             <td style="border:1px solid #D4D4D4;padding:4px;text-align:center;background:#F3F3F3;color:#616161">2</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2019</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">34</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">1</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">1</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">6</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">1</td>
+             <td style="padding:4px;background:#FFFFFF;border:2px solid #107C41;font-weight:600">52000</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">87</td>
+           </tr>
+           <tr>
+             <td style="border:1px solid #D4D4D4;padding:4px;text-align:center;background:#F3F3F3;color:#616161">3</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2019</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">8</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2</td>
+             <td style="border:1px solid #D4D4D4;padding:4px;color:#A0A0A0">&ndash;</td>
+             <td style="border:1px solid #D4D4D4;padding:4px;color:#A0A0A0">&ndash;</td>
+             <td style="border:1px solid #D4D4D4;padding:4px;color:#A0A0A0">&ndash;</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">112</td>
+           </tr>
+           <tr>
+             <td style="border:1px solid #D4D4D4;padding:4px;text-align:center;background:#F3F3F3;color:#616161">4</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2020</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">67</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">1</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">1</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">1</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">3</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">28400</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">64</td>
+           </tr>
+           <tr>
+             <td style="border:1px solid #D4D4D4;padding:4px;text-align:center;background:#F3F3F3;color:#616161">5</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2020</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">29</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">6</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">6</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">1</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">41200</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">1</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">95</td>
+           </tr>
+           <tr>
+             <td style="border:1px solid #D4D4D4;padding:4px;text-align:center;background:#F3F3F3;color:#616161">6</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2021</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">45</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">1</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">4</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">15600</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">71</td>
+           </tr>
+           <tr>
+             <td style="border:1px solid #D4D4D4;padding:4px;text-align:center;background:#F3F3F3;color:#616161">7</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2021</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">52</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">1</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">1</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">1</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">78500</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">58</td>
+           </tr>
+           <tr>
+             <td style="border:1px solid #D4D4D4;padding:4px;text-align:center;background:#F3F3F3;color:#616161">8</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2022</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">3</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">1</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">8</td>
+             <td style="border:1px solid #D4D4D4;padding:4px;color:#A0A0A0">&ndash;</td>
+             <td style="border:1px solid #D4D4D4;padding:4px;color:#A0A0A0">&ndash;</td>
+             <td style="border:1px solid #D4D4D4;padding:4px;color:#A0A0A0">&ndash;</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">130</td>
+           </tr>
+           <tr>
+             <td style="border:1px solid #D4D4D4;padding:4px;text-align:center;background:#F3F3F3;color:#616161">9</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2022</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">71</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">1</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">5</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">3</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">19200</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">49</td>
+           </tr>
+           <tr>
+             <td style="border:1px solid #D4D4D4;padding:4px;text-align:center;background:#F3F3F3;color:#616161">10</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2023</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">38</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">1</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">3</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">6</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">1</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">33750</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">1</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">102</td>
+           </tr>
+           <tr>
+             <td style="border:1px solid #D4D4D4;padding:4px;text-align:center;background:#F3F3F3;color:#616161">11</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2024</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">22</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">4</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">6</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">1</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">24900</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">2</td>
+             <td style="border:1px solid #D4D4D4;padding:4px">118</td>
+           </tr>
+         </tbody>
+       </table>
+       <div style="padding:5px 10px;background:#F3F3F3;border-top:1px solid #D4D4D4;font-size:12px;color:#3B3A39">
+         <span style="background:#FFFFFF;border:1px solid #D4D4D4;border-bottom:2px solid #107C41;padding:3px 10px;border-radius:3px 3px 0 0">Sheet1</span>
+       </div>
+     </div>
+     </div>`},
    {h:`<div class="h3">And here's the kind of thing you can build</div>
      <p class="lede">Painting a detailed portrait of America's communities:</p>
      <div class="figrow">
@@ -354,11 +524,15 @@ uninsured_by_state %>% arrange(desc(pct))`},
    {code:`print(uninsured_by_state, n = Inf)`},
    {h:`<div class="h3">Putting it together: adults on Medicaid</div>
      <p class="lede">filter, then count; add group_by(year) for a trend:</p>`},
-   {code:`# In 2024: how many adults were on Medicaid?
+   {code:`# How many people are enrolled in Medicaid?
+data %>%
+    filter(hinscaid == 2) %>%
+    summarise(n = n())`},
+   {code:`# How many adults were enrolled in Medicaid in 2024?
 data %>%
   filter(year == 2024, age >= 18, hinscaid == 2) %>%   # hinscaid 2 = Medicaid/CHIP
-  summarise(n = n())
-
+  summarise(n = n())`},
+   {code:`# How did the number of adults enrolled in Medicaid change over time?
 # For every year: group_by(year) first, then count within each
 medicaid_by_year <- data %>%
   filter(age >= 18, hinscaid == 2) %>%
