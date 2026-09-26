@@ -36,3 +36,5 @@ medicaid_by_year <- data %>%
   summarise(n = n())
 
 print(medicaid_by_year, n = Inf)
+
+write_csv(medicaid_by_year, "results/medicaid_year.csv")
