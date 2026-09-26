@@ -223,7 +223,74 @@ const S = [
      "<span class=\"tok\">summarise</span> \u2014 what number? (a count, a share, a median...)"]},
    {h:`<p class="lede">For example, <b>how many adults are on Medicaid?</b> We <b>filter</b> to adults
      who are on Medicaid, then <b>summarise</b> by counting them. Want it for every year? Add a
-     <b>group_by(year)</b> in the middle to see the trend</p>`}]},
+     <b>group_by(year)</b> in the middle to see the trend</p>
+     <div style="overflow-x:auto;margin-top:14px">
+     <svg viewBox="0 0 890 180" xmlns="http://www.w3.org/2000/svg" role="img" style="width:100%;height:auto;display:block">
+     <title>Filter, group by, and summarise applied to a Medicaid enrollment example</title>
+     <desc>Sixteen person shapes -- rectangles for people on Medicaid, dimmed circles for people not on Medicaid -- are filtered down to ten rectangles, colored by year, then sorted into four year-piles of four, three, two, and one card arranged in two rows each. Each pile is summarised into a stacked-card total whose stack height matches its group size: four layers for 2021, three for 2022, two for 2023, and a single card for 2024.</desc>
+     <defs>
+     <marker id="arrow2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+     <path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"></path>
+     </marker>
+     </defs>
+     <text x="130" y="24" style="font-family:var(--display);font-weight:600;font-size:14px;fill:var(--ink)" text-anchor="middle">filter()</text>
+     <rect x="40" y="48" width="20" height="30" rx="5" fill="var(--a-immig)"></rect>
+     <circle cx="73" cy="63" r="10" fill="var(--a-health)" opacity="0.3"></circle>
+     <rect x="86" y="48" width="20" height="30" rx="5" fill="var(--a-health)"></rect>
+     <rect x="109" y="48" width="20" height="30" rx="5" fill="var(--a-immig)"></rect>
+     <circle cx="142" cy="63" r="10" fill="var(--a-tech)" opacity="0.3"></circle>
+     <rect x="155" y="48" width="20" height="30" rx="5" fill="var(--a-tech)"></rect>
+     <circle cx="188" cy="63" r="10" fill="var(--a-fun)" opacity="0.3"></circle>
+     <rect x="201" y="48" width="20" height="30" rx="5" fill="var(--a-health)"></rect>
+     <rect x="40" y="84" width="20" height="30" rx="5" fill="var(--a-immig)"></rect>
+     <circle cx="73" cy="99" r="10" fill="var(--a-immig)" opacity="0.3"></circle>
+     <rect x="86" y="84" width="20" height="30" rx="5" fill="var(--a-fun)"></rect>
+     <rect x="109" y="84" width="20" height="30" rx="5" fill="var(--a-health)"></rect>
+     <rect x="132" y="84" width="20" height="30" rx="5" fill="var(--a-immig)"></rect>
+     <circle cx="165" cy="99" r="10" fill="var(--a-health)" opacity="0.3"></circle>
+     <circle cx="188" cy="99" r="10" fill="var(--a-tech)" opacity="0.3"></circle>
+     <rect x="201" y="84" width="20" height="30" rx="5" fill="var(--a-tech)"></rect>
+     <text x="130" y="150" style="font-family:var(--mono);font-size:11px;fill:var(--muted)" text-anchor="middle">adults on Medicaid</text>
+     <line x1="225" y1="80" x2="266" y2="80" stroke="var(--muted)" stroke-width="2" marker-end="url(#arrow2)"></line>
+     <text x="363" y="24" style="font-family:var(--display);font-weight:600;font-size:14px;fill:var(--ink)" text-anchor="middle">group_by()</text>
+     <text x="292" y="38" style="font-family:var(--mono);font-size:10px;fill:var(--muted)" text-anchor="middle">2021</text>
+     <rect x="270" y="48" width="20" height="30" rx="5" fill="var(--a-immig)"></rect>
+     <rect x="293" y="48" width="20" height="30" rx="5" fill="var(--a-immig)"></rect>
+     <rect x="270" y="84" width="20" height="30" rx="5" fill="var(--a-immig)"></rect>
+     <rect x="293" y="84" width="20" height="30" rx="5" fill="var(--a-immig)"></rect>
+     <text x="355" y="38" style="font-family:var(--mono);font-size:10px;fill:var(--muted)" text-anchor="middle">2022</text>
+     <rect x="333" y="48" width="20" height="30" rx="5" fill="var(--a-health)"></rect>
+     <rect x="356" y="48" width="20" height="30" rx="5" fill="var(--a-health)"></rect>
+     <rect x="333" y="84" width="20" height="30" rx="5" fill="var(--a-health)"></rect>
+     <text x="406" y="38" style="font-family:var(--mono);font-size:10px;fill:var(--muted)" text-anchor="middle">2023</text>
+     <rect x="396" y="48" width="20" height="30" rx="5" fill="var(--a-tech)"></rect>
+     <rect x="396" y="84" width="20" height="30" rx="5" fill="var(--a-tech)"></rect>
+     <text x="446" y="38" style="font-family:var(--mono);font-size:10px;fill:var(--muted)" text-anchor="middle">2024</text>
+     <rect x="436" y="48" width="20" height="30" rx="5" fill="var(--a-fun)"></rect>
+     <text x="363" y="150" style="font-family:var(--mono);font-size:11px;fill:var(--muted)" text-anchor="middle">sort by year</text>
+     <line x1="460" y1="80" x2="491" y2="80" stroke="var(--muted)" stroke-width="2" marker-end="url(#arrow2)"></line>
+     <text x="677" y="24" style="font-family:var(--display);font-weight:600;font-size:14px;fill:var(--ink)" text-anchor="middle">summarise()</text>
+     <rect x="507" y="60" width="70" height="70" rx="10" fill="var(--a-immig)" opacity="0.35"></rect>
+     <rect x="503" y="56" width="70" height="70" rx="10" fill="var(--a-immig)" opacity="0.5"></rect>
+     <rect x="499" y="52" width="70" height="70" rx="10" fill="var(--a-immig)" opacity="0.7"></rect>
+     <rect x="495" y="48" width="70" height="70" rx="10" fill="var(--a-immig)"></rect>
+     <text x="530" y="70" style="font-family:var(--mono);font-size:11px;fill:#fff" text-anchor="middle">2021</text>
+     <text x="530" y="100" style="font-family:var(--display);font-weight:700;font-size:26px;fill:#fff" text-anchor="middle">4</text>
+     <rect x="605" y="56" width="70" height="70" rx="10" fill="var(--a-health)" opacity="0.45"></rect>
+     <rect x="601" y="52" width="70" height="70" rx="10" fill="var(--a-health)" opacity="0.7"></rect>
+     <rect x="597" y="48" width="70" height="70" rx="10" fill="var(--a-health)"></rect>
+     <text x="632" y="70" style="font-family:var(--mono);font-size:11px;fill:#fff" text-anchor="middle">2022</text>
+     <text x="632" y="100" style="font-family:var(--display);font-weight:700;font-size:26px;fill:#fff" text-anchor="middle">3</text>
+     <rect x="699" y="52" width="70" height="70" rx="10" fill="var(--a-tech)" opacity="0.6"></rect>
+     <rect x="695" y="48" width="70" height="70" rx="10" fill="var(--a-tech)"></rect>
+     <text x="730" y="70" style="font-family:var(--mono);font-size:11px;fill:#fff" text-anchor="middle">2023</text>
+     <text x="730" y="100" style="font-family:var(--display);font-weight:700;font-size:26px;fill:#fff" text-anchor="middle">2</text>
+     <rect x="789" y="48" width="70" height="70" rx="10" fill="var(--a-fun)"></rect>
+     <text x="824" y="70" style="font-family:var(--mono);font-size:11px;fill:#fff" text-anchor="middle">2024</text>
+     <text x="824" y="100" style="font-family:var(--display);font-weight:700;font-size:26px;fill:#fff" text-anchor="middle">1</text>
+     <text x="677" y="150" style="font-family:var(--mono);font-size:11px;fill:var(--muted)" text-anchor="middle">count the number in each group</text>
+     </svg>
+     </div>`}]},
 {sec:"intro", area:"intro", tag:"Set up", kick:"Intro", q:"Set up your workspace",
  blocks:[
    {pts:[
