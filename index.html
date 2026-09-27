@@ -463,7 +463,15 @@ medicaid_by_year <- data %>%
   group_by(year) %>%
   summarise(n = n())
 
-print(medicaid_by_year, n = Inf)`}]},
+print(medicaid_by_year, n = Inf)`},
+   {h:`<p class="lede"><b>Tip:</b> you can <span class="tok">group_by()</span> more than one thing at once —
+     just separate them with a comma:</p>`},
+   {code:`medicaid_sex_year <- data %>%
+  filter(age >= 18, hinscaid == 2) %>%
+  group_by(year, sex) %>%
+  summarise(n = n())
+
+print(medicaid_sex_year, n = Inf)`}]},
 {sec:"intro", area:"intro", tag:"Weights", kick:"Intro", q:"Weights",
  blocks:[
    {h:`<div class="note"><b>Remember:</b> the ACS surveys a fraction of the country.
