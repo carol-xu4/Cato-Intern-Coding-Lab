@@ -459,7 +459,7 @@ fam = data %>%
   left_join(state_lk, by = "statefip")
 
 ggplot(fam, aes(x = reorder(abb, median_family_income), y = median_family_income)) +
-  geom_col(fill = "#25b490") +
+  geom_col(fill = "#1B7A4B") +
   coord_flip() +
   scale_y_continuous(labels = scales::label_dollar(), expand = expansion(mult = c(0, 0.04))) +
   labs(
