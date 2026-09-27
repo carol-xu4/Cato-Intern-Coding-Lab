@@ -7,16 +7,7 @@ data <- read_csv("data/acs00015.csv")
 
 ## HEALTH -------------------------------------------------------------------------------------------  
 # uninsured, over time
-uninsured <- data %>%
-  filter(age >= 18) %>%
-  group_by(year) %>%
-  summarise(pct = 100 * mean(hcovany == 1))   # hcovany 1 = no coverage
-
-ggplot(uninsured, aes(year, pct)) +
-  geom_line(linewidth = 1, color = "#3043B4") + geom_point() +
-  labs(x = NULL, y = "% uninsured")
-
-uninsured <- data %>%
+uninsured = data %>%
   filter(age >= 18) %>%
   group_by(year) %>%
   summarise(pct = 100 * weighted.mean(hcovany == 1, perwt), .groups = "drop")   # hcovany 1 = no coverage
@@ -47,16 +38,7 @@ ggplot(uninsured, aes(x = as.numeric(year), y = pct)) +
 ggsave("Results/health1.png", width = 8, height = 6)
 
 # Kids on Medicaid/CHIP
-kids <- data %>%
-  filter(age < 19, statefip %in% c(48, 6, 36)) %>%   # 48 TX, 6 CA, 36 NY
-  group_by(year, statefip) %>%
-  summarise(pct = 100 * mean(hinscaid == 2), .groups = "drop")   # 2 = Medicaid/CHIP
-
-ggplot(kids, aes(year, pct, color = factor(statefip))) +
-  geom_line(linewidth = 1) + geom_point() +
-  labs(x = NULL, y = "% of children on Medicaid", color = "State")
-
-kids <- data %>%
+kids = data %>%
   filter(age < 19, statefip %in% c(48, 6, 36)) %>%   # 48 TX, 6 CA, 36 NY
   group_by(year, statefip) %>%
   summarise(pct = 100 * weighted.mean(hinscaid == 2, perwt), .groups = "drop") %>%  # 2 = Medicaid/CHIP
@@ -100,12 +82,7 @@ ggplot(kids, aes(x = as.numeric(year), y = pct, color = state)) +
 ggsave("Results/health2.png", width = 8, height = 6)
 
 #  Medicaid by employment
-data %>%
-  filter(year == 2024, age >= 18, age <= 64) %>%
-  group_by(empstat) %>%          # 1 employed, 2 unemployed, 3 not in labor force
-  summarise(pct_medicaid = 100 * mean(hinscaid == 2))
-
-emp_medicaid <- data %>%
+emp_medicaid = data %>%
   filter(year == 2024, age >= 18, age <= 64) %>%
   group_by(empstat) %>%          # 1 employed, 2 unemployed, 3 not in labor force
   summarise(pct_medicaid = 100 * weighted.mean(hinscaid == 2, perwt), .groups = "drop") %>%
@@ -142,16 +119,7 @@ ggsave("Results/health3.png", width = 8, height = 6)
 
 ##  EDUCATION ---------------------------------------------------------------------------------------
 # Income by education
-inc <- data %>%
-  filter(inctot != 9999999) %>%   # 9999999 = N/A
-  group_by(educ) %>%
-  summarise(median_income = median(inctot))
-
-ggplot(inc, aes(factor(educ), median_income)) +
-  geom_col(fill = "#0D0E51") +
-  labs(x = "Education level (educ code)", y = "Median personal income")
-
-educ_lk <- tibble::tribble(
+educ_lk = tibble::tribble(
   ~educ, ~label,
   0,  "None / preschool",
   1,  "Grade 1-4",
@@ -164,13 +132,12 @@ educ_lk <- tibble::tribble(
   8,  "2 yrs college",
   9,  "3 yrs college",
   10, "Bachelor's",
-  11, "5+ yrs college"
-)
+  11, "5+ yrs college")
 
-inc <- data %>%
+inc = data %>%
   filter(year == 2024, inctot != 9999999, age >= 18, age <= 64) %>%   # 2024, working-age adults; 9999999 = N/A
   group_by(educ) %>%
-  summarise(median_income = matrixStats::weightedMedian(inctot, perwt), .groups = "drop") %>%
+  summarise(median_income = matrixStats::weightedMedian(inctot2024, perwt), .groups = "drop") %>%
   left_join(educ_lk, by = "educ") %>%
   mutate(label = factor(label, levels = educ_lk$label))   # keep education in order
 
@@ -203,12 +170,7 @@ ggplot(inc, aes(x = label, y = median_income)) +
 ggsave("Results/education1.png", width = 8, height = 6)
 
 # Degrees by sex
-data %>%
-  filter(year == 2024, age >= 25) %>%
-  group_by(sex) %>%              # 1 male, 2 female
-  summarise(pct_ba = 100 * mean(educ >= 10))   # educ >= 10 ~ bachelor's+
-
-degrees <- data %>%
+degrees = data %>%
   filter(year == 2024, age >= 25) %>%
   group_by(sex) %>%              # 1 male, 2 female
   summarise(pct_ba = 100 * weighted.mean(educ >= 10, perwt), .groups = "drop") %>%  # educ >= 10 ~ bachelor's+
@@ -243,12 +205,8 @@ ggplot(degrees, aes(x = sex, y = pct_ba, fill = sex)) +
 ggsave("Results/education2.png", width = 8, height = 6)
 
 # Lawyers with econ degree
-data %>%
-  filter(age >= 25, age <= 34, occ2010 == 2100, degfieldd == 5501) %>%   # 2100 = lawyers, judges
-  summarise(n = n())
-
-# weighted: young lawyers with an economics degree vs. any other field
-lawyer_degree <- data %>%
+# lawyers with an economics degree vs. any other field
+lawyer_degree = data %>%
   filter(year == 2024, age >= 25, age <= 34, occ2010 == 2100, degfieldd > 0) %>%  # 2100 = lawyers/judges; keep those reporting a degree field
   group_by(field = if_else(degfieldd == 5501, "Economics", "Other field")) %>%    # 5501 = economics
   summarise(lawyers = sum(perwt), .groups = "drop")
@@ -282,14 +240,10 @@ ggsave("Results/education3.png", width = 8, height = 6)
 
 ## GENERAL ECONOMICS --------------------------------------------------------------------------------
 # wages over time
-wages <- data %>%
+wages = data %>%
   filter(incwage > 0, incwage != 999999) %>%
   group_by(year) %>%
   summarise(median_wage = matrixStats::weightedMedian(incwage, perwt), .groups = "drop")
-
-ggplot(wages, aes(year, median_wage)) +
-  geom_line(linewidth = 1, color = "#1B7A4B") + geom_point() +
-  labs(x = NULL, y = "Median wage income")
 
 ggplot(wages, aes(x = as.numeric(year), y = median_wage)) +
   geom_line(linewidth = 1.2, color = "#1B7A4B") +
@@ -317,14 +271,10 @@ ggplot(wages, aes(x = as.numeric(year), y = median_wage)) +
 ggsave("Results/econ1.png", width = 8, height = 6)
 
 # employment over time
-emp <- data %>%
+emp = data %>%
   filter(age >= 18, age <= 64) %>%
   group_by(year) %>%
   summarise(pct_employed = 100 * weighted.mean(empstat == 1, perwt), .groups = "drop")  # 1 = employed
-
-ggplot(emp, aes(year, pct_employed)) +
-  geom_line(linewidth = 1, color = "#1B7A4B") + geom_point() +
-  labs(x = NULL, y = "% employed (age 18-64)")
 
 ggplot(emp, aes(x = as.numeric(year), y = pct_employed)) +
   geom_line(linewidth = 1.2, color = "#1B7A4B") +
@@ -352,12 +302,7 @@ ggplot(emp, aes(x = as.numeric(year), y = pct_employed)) +
 ggsave("Results/econ2.png", width = 8, height = 6)
 
 # work hours by sex
-data %>%
-  filter(year == 2024, uhrswork > 0) %>%
-  group_by(sex) %>%
-  summarise(avg_hours = mean(uhrswork))
-
-hours <- data %>%
+hours = data %>%
   filter(year == 2024, uhrswork > 0) %>%
   group_by(sex) %>%
   summarise(avg_hours = weighted.mean(uhrswork, perwt), .groups = "drop") %>%
@@ -389,7 +334,7 @@ ggplot(hours, aes(x = sex, y = avg_hours, fill = sex)) +
 ggsave("Results/econ3.png", width = 8, height = 6)
 
 # occupation-code -> label lookup (extend from the full IPUMS OCC2010 list as needed)
-occ_lk <- tibble::tribble(
+occ_lk = tibble::tribble(
   ~occ2010, ~label,
     10, "Chief executives and legislators",
     20, "General and operations managers",
@@ -426,29 +371,22 @@ occ_lk <- tibble::tribble(
   5400, "Receptionists and information clerks",
   5620, "Stock clerks and order fillers",
   6440, "Pipelayers, plumbers, pipefitters, and steamfitters",
-  9130, "Driver/sales workers and truck drivers"
-) %>%
+  9130, "Driver/sales workers and truck drivers") %>%
   dplyr::mutate(occ2010 = as.integer(occ2010))
 
 # wages by occupation
-data %>%
-  filter(year == 2024, incwage > 0, incwage != 999999) %>%
-  group_by(occ2010) %>%
-  summarise(median_wage = median(incwage)) %>%
-  arrange(desc(median_wage)) 
-
-occ_wages <- data %>%
+occ_wages = data %>%
   filter(year == 2024, incwage > 0, incwage != 999999) %>%
   group_by(occ2010) %>%
   summarise(median_wage = matrixStats::weightedMedian(incwage, perwt),
             n = n(), .groups = "drop") %>%
-  filter(n >= 100)                     # drop tiny, noisy occupation cells
+  filter(n >= 100)                     # drop tiny cells
 
-occ_wages <- occ_wages %>%
+occ_wages = occ_wages %>%
   left_join(occ_lk, by = "occ2010") %>%
   mutate(occ_label = coalesce(label, as.character(occ2010)))   # actual job label, code as fallback
 
-ends <- bind_rows(
+ends = bind_rows(
   slice_max(occ_wages, median_wage, n = 15) %>% mutate(grp = "Highest-paid"),
   slice_min(occ_wages, median_wage, n = 15) %>% mutate(grp = "Lowest-paid"))
 
@@ -487,7 +425,7 @@ data %>%
   summarise(avg_hours = mean(uhrswork)) %>%
   arrange(desc(avg_hours))
 
-occ_hours <- data %>%
+occ_hours = data %>%
   filter(year == 2024, uhrswork > 0) %>%
   mutate(occ2010 = as.integer(occ2010)) %>%
   group_by(occ2010) %>%
@@ -500,26 +438,21 @@ occ_hours <- data %>%
 print(occ_hours)
 
 # family income by state
-fam <- data %>%
+fam = data %>%
   filter(year == 2024, ftotinc != 9999999) %>%
   group_by(statefip) %>%
   summarise(median_family_income = median(ftotinc))
 
-ggplot(fam, aes(reorder(statefip, median_family_income), median_family_income)) +
-  geom_col(fill = "#1B7A4B") + coord_flip() +
-  labs(x = NULL, y = "Median family income")
-
-state_lk <- tibble::tribble(
+state_lk = tibble::tribble(
   ~statefip, ~abb,
    1,"AL",  2,"AK",  4,"AZ",  5,"AR",  6,"CA",  8,"CO",  9,"CT", 10,"DE", 11,"DC",
   12,"FL", 13,"GA", 15,"HI", 16,"ID", 17,"IL", 18,"IN", 19,"IA", 20,"KS", 21,"KY",
   22,"LA", 23,"ME", 24,"MD", 25,"MA", 26,"MI", 27,"MN", 28,"MS", 29,"MO", 30,"MT",
   31,"NE", 32,"NV", 33,"NH", 34,"NJ", 35,"NM", 36,"NY", 37,"NC", 38,"ND", 39,"OH",
   40,"OK", 41,"OR", 42,"PA", 44,"RI", 45,"SC", 46,"SD", 47,"TN", 48,"TX", 49,"UT",
-  50,"VT", 51,"VA", 53,"WA", 54,"WV", 55,"WI", 56,"WY", 72,"PR"
-)
+  50,"VT", 51,"VA", 53,"WA", 54,"WV", 55,"WI", 56,"WY", 72,"PR")
 
-fam <- data %>%
+fam = data %>%
   filter(year == 2024, ftotinc != 9999999) %>%
   group_by(statefip) %>%
   summarise(median_family_income = matrixStats::weightedMedian(ftotinc, perwt), .groups = "drop") %>%
@@ -550,7 +483,7 @@ ggplot(fam, aes(x = reorder(abb, median_family_income), y = median_family_income
 ggsave("Results/econ6.png", width = 8, height = 6)
 
 # number of kids
-fam_kids <- data %>%
+fam_kids = data %>%
   filter(year == 2024, ftotinc != 9999999) %>%
   group_by(nchild) %>%
   summarise(median_family_income = matrixStats::weightedMedian(ftotinc, perwt), .groups = "drop") %>%
@@ -585,19 +518,11 @@ ggsave("Results/econ7.png", width = 8, height = 6)
 
 ## IMMIGRATION --------------------------------------------------------------------------------------
 # foreign-born over time
-trend <- data %>%
+immigrants = data %>%
   group_by(year) %>%
-  summarise(pct = 100 * mean(bpl >= 100))   # bpl >= 100 = foreign-born
+  summarise(pct = 100 * weighted.mean(bpl >= 100, perwt), .groups = "drop")   
 
-ggplot(trend, aes(year, pct)) +
-  geom_line(linewidth = 1, color = "#B23A48") + geom_point() +
-  labs(x = NULL, y = "% foreign-born")
-
-fb <- data %>%
-  group_by(year) %>%
-  summarise(pct = 100 * weighted.mean(bpl >= 100, perwt), .groups = "drop")   # bpl >= 100 = foreign-born
-
-ggplot(fb, aes(x = as.numeric(year), y = pct)) +
+ggplot(immigrants, aes(x = as.numeric(year), y = pct)) +
   geom_line(linewidth = 1.2, color = "#B23A48") +
   geom_point(size = 2, color = "#B23A48") +
   scale_x_continuous(breaks = seq(2016, 2024, by = 2), expand = c(0.02, 0)) +
@@ -623,12 +548,7 @@ ggplot(fb, aes(x = as.numeric(year), y = pct)) +
 ggsave("Results/immigration1.png", width = 8, height = 6)
 
 # immigrant arrival & income
-data %>%
-  filter(year == 2024, citizen == 3, yrimmig > 0, inctot != 9999999) %>%   # 3 = not a citizen
-  group_by(arrived = if_else(yrimmig <= 1999, "1999 or earlier", "2000 or later")) %>%
-  summarise(median_income = median(inctot))
-
-arrival <- data %>%
+arrival = data %>%
   filter(year == 2024, citizen == 3, yrimmig > 0, inctot != 9999999) %>%   # 3 = not a citizen
   group_by(arrived = if_else(yrimmig <= 1999, "1999 or earlier", "2000 or later")) %>%
   summarise(median_income = matrixStats::weightedMedian(inctot, perwt), .groups = "drop")
@@ -659,19 +579,10 @@ ggplot(arrival, aes(x = arrived, y = median_income, fill = arrived)) +
 ggsave("Results/immigration2.png", width = 8, height = 6)
 
 # naturalized over time
-nat <- data %>%
+nat = data %>%
   filter(bpl >= 100) %>%
   group_by(year) %>%
-  summarise(pct = 100 * mean(citizen == 2))   # 2 = naturalized
-
-ggplot(nat, aes(year, pct)) +
-  geom_line(linewidth = 1, color = "#B23A48") + geom_point() +
-  labs(x = NULL, y = "% naturalized")
-
-nat <- data %>%
-  filter(bpl >= 100) %>%
-  group_by(year) %>%
-  summarise(pct = 100 * weighted.mean(citizen == 2, perwt), .groups = "drop")   # 2 = naturalized
+  summarise(pct = 100 * weighted.mean(citizen == 2, perwt), .groups = "drop")  
 
 ggplot(nat, aes(x = as.numeric(year), y = pct)) +
   geom_line(linewidth = 1.2, color = "#B23A48") +
@@ -700,16 +611,7 @@ ggsave("Results/immigration3.png", width = 8, height = 6)
 
 ## TECHNOLOGY ---------------------------------------------------------------------------------------
 # smartphones by state
-phones <- data %>%
-  filter(year == 2024, cismrtphn != 0) %>%
-  group_by(statefip) %>%
-  summarise(pct = 100 * mean(cismrtphn == 1))   # 1 = yes
-
-ggplot(phones, aes(reorder(statefip, pct), pct)) +
-  geom_col(fill = "#6D3FA3") + coord_flip() +
-  labs(x = NULL, y = "% with a smartphone")
-
-phones <- data %>%
+phones = data %>%
   filter(year == 2024, cismrtphn != 0) %>%
   distinct(serial, .keep_all = TRUE) %>%       # one observation per household
   group_by(statefip) %>%
@@ -748,16 +650,7 @@ ggplot(phones, aes(x = reorder(abb, pct), y = pct)) +
 ggsave("Results/tech1.png", width = 8, height = 6)
 
 # smartphones over time
-sp <- data %>%
-  filter(cismrtphn != 0) %>%
-  group_by(year) %>%
-  summarise(pct = 100 * mean(cismrtphn == 1))
-
-ggplot(sp, aes(year, pct)) +
-  geom_line(linewidth = 1, color = "#6D3FA3") + geom_point() +
-  labs(x = NULL, y = "% with a smartphone")
-
-sp <- data %>%
+sp = data %>%
   filter(cismrtphn != 0) %>%
   distinct(year, serial, .keep_all = TRUE) %>%   # one observation per household per year
   group_by(year) %>%
@@ -798,12 +691,7 @@ ggplot(sp, aes(x = as.numeric(year), y = pct)) +
 ggsave("Results/tech2.png", width = 8, height = 6)
 
 # smartphones by education
-data %>%
-  filter(year == 2024, cismrtphn != 0) %>%
-  group_by(educ) %>%
-  summarise(pct = 100 * mean(cismrtphn == 1))
-
-phone_educ <- data %>%
+phone_educ = data %>%
   filter(year == 2024, age >= 25, cismrtphn != 0) %>%
   group_by(educ) %>%
   summarise(pct = 100 * weighted.mean(cismrtphn == 1, perwt),
@@ -843,16 +731,7 @@ ggsave("Results/tech3.png", width = 8, height = 6)
 
 ## ENERGY / ENVIRONMENT -----------------------------------------------------------------------------
 # commute modes
-commute <- data %>%
-  filter(year == 2024, tranwork > 0) %>%
-  group_by(tranwork) %>%
-  summarise(n = n())
-
-ggplot(commute, aes(reorder(tranwork, n), n)) +
-  geom_col(fill = "#0E7C86") + coord_flip() +
-  labs(x = "Mode (tranwork code)", y = "Workers (sample)")
-
-commute <- data %>%
+commute = data %>%
   filter(year == 2024, tranwork > 0) %>%
   mutate(mode = case_when(
     tranwork >= 10 & tranwork <= 19 ~ "Car, truck, or van",
@@ -896,16 +775,7 @@ ggplot(commute, aes(x = reorder(mode, workers), y = workers)) +
 ggsave("Results/energy1.png", width = 8, height = 6)
 
 # electricity bills by state
-elec <- data %>%
-  filter(year == 2024, costelec > 0, costelec < 9990) %>%
-  group_by(statefip) %>%
-  summarise(avg_bill = mean(costelec))
-
-ggplot(elec, aes(reorder(statefip, avg_bill), avg_bill)) +
-  geom_col(fill = "#0E7C86") + coord_flip() +
-  labs(x = NULL, y = "Avg annual electricity cost ($)")
-
-elec <- data %>%
+elec = data %>%
   filter(year == 2024, costelec > 0, costelec < 9990) %>%
   distinct(serial, .keep_all = TRUE) %>%       # one observation per household
   group_by(statefip) %>%
@@ -944,16 +814,7 @@ ggplot(elec, aes(x = reorder(abb, avg_bill), y = avg_bill)) +
 ggsave("Results/energy2.png", width = 8, height = 6)
 
 # work from home over time
-wfh <- data %>%
-  filter(tranwork > 0) %>%
-  group_by(year) %>%
-  summarise(pct_wfh = 100 * mean(tranwork == 80))   # 80 = worked at home
-
-ggplot(wfh, aes(year, pct_wfh)) +
-  geom_line(linewidth = 1, color = "#0E7C86") + geom_point() +
-  labs(x = NULL, y = "% working from home")
-
-wfh <- data %>%
+wfh = data %>%
   filter(tranwork > 0) %>%
   group_by(year) %>%
   summarise(
@@ -1001,7 +862,7 @@ data %>%
   summarise(avg_departs = mean(departs)) %>%
   arrange(avg_departs)
 
-occ_lk <- tibble::tribble(
+occ_lk = tibble::tribble(
   ~occ2010, ~label,
     10, "Chief executives and legislators",
     20, "General and operations managers",
@@ -1017,11 +878,10 @@ occ_lk <- tibble::tribble(
   5000, "First-line supervisors of office and administrative support workers",
   5700, "Secretaries and administrative assistants",
   6260, "Construction laborers",
-  6355, "Electricians"
-) %>%
+  6355, "Electricians") %>%
   dplyr::mutate(occ2010 = as.integer(occ2010))
 
-early <- data %>%
+early_birds = data %>%
   filter(year == 2024, departs > 0) %>%
   mutate(
     occ2010 = as.integer(occ2010),                                 # match occ_lk key
@@ -1041,7 +901,7 @@ early <- data %>%
       floor(avg_minutes / 60),
       round(avg_minutes %% 60)))
 
-ggplot(early, aes(x = reorder(occ_label, -avg_minutes), y = avg_minutes)) +
+ggplot(early_birds, aes(x = reorder(occ_label, -avg_minutes), y = avg_minutes)) +
   geom_col(fill = "#C97703") +
   coord_flip() +
   geom_text(
@@ -1078,16 +938,7 @@ ggplot(early, aes(x = reorder(occ_label, -avg_minutes), y = avg_minutes)) +
 ggsave("Results/bonus1.png", width = 8, height = 6)
 
 # night-shift states
-night <- data %>%
-  filter(departs > 0) %>%
-  group_by(statefip) %>%
-  summarise(pct = 100 * mean(departs < 500))   # before 5:00 a.m.
-
-ggplot(night, aes(reorder(statefip, pct), pct)) +
-  geom_col(fill = "#C97703") + coord_flip() +
-  labs(x = NULL, y = "% leaving before 5 a.m.")
-
-night <- data %>%
+night_workers = data %>%
   filter(year == 2024, departs > 0) %>%
   group_by(statefip) %>%
   summarise(
@@ -1095,7 +946,7 @@ night <- data %>%
     .groups = "drop") %>%                       # before 5:00 a.m.
   left_join(state_lk, by = "statefip")
 
-ggplot(night, aes(x = reorder(abb, pct), y = pct)) +
+ggplot(night_workers, aes(x = reorder(abb, pct), y = pct)) +
   geom_col(fill = "#C97703") +
   coord_flip() +
   scale_y_continuous(
@@ -1126,12 +977,7 @@ ggplot(night, aes(x = reorder(abb, pct), y = pct)) +
 ggsave("Results/bonus2.png", width = 8, height = 6)
 
 # does WFH pay?
-data %>%
-  filter(incwage > 0, incwage != 999999) %>%
-  group_by(wfh = tranwork == 80) %>%
-  summarise(median_wage = median(incwage))
-
-wfh_pay <- data %>%
+wfh_pay = data %>%
   filter(
     year == 2024,
     tranwork > 0,
@@ -1176,13 +1022,7 @@ ggplot(wfh_pay, aes(x = work_location, y = median_wage, fill = work_location)) +
 ggsave("Results/bonus3.png", width = 8, height = 6)
 
 # overqualified paycheck
-data %>%
-  filter(year == 2024, educ < 10, incwage > 0, incwage != 999999) %>%
-  group_by(occ2010) %>%
-  summarise(median_wage = median(incwage)) %>%
-  arrange(desc(median_wage))
-
-occ_lk <- tibble::tribble(
+occ_lk = tibble::tribble(
   ~occ2010, ~label,
    430, "Miscellaneous managers",
   3255, "Registered nurses",
@@ -1198,11 +1038,10 @@ occ_lk <- tibble::tribble(
   6260, "Construction laborers",
   8965, "Miscellaneous production workers, including semiconductor processors",
   9130, "Driver/sales workers and truck drivers",
-  9620, "Laborers and freight, stock, and material movers, hand"
-) %>%
+  9620, "Laborers and freight, stock, and material movers, hand") %>%
   dplyr::mutate(occ2010 = as.integer(occ2010))
 
-no_ba_pay <- data %>%
+no_ba_pay = data %>%
   filter(
     year == 2024,
     age >= 25,
@@ -1251,12 +1090,7 @@ ggplot(no_ba_pay, aes(x = reorder(occ_label, median_wage), y = median_wage)) +
 ggsave("Results/bonus4.png", width = 8, height = 6)
 
 # hours by marital status
-data %>%
-  filter(uhrswork > 0) %>%
-  group_by(marst) %>%
-  summarise(avg_hours = mean(uhrswork))
-
-marital_hours <- data %>%
+marital_hours = data %>%
   filter(year == 2024, uhrswork > 0) %>%
   mutate(marital_status = case_when(
     marst %in% c(1, 2) ~ "Married",
@@ -1357,7 +1191,7 @@ ggplot(
 
 ggsave("Results/bonus6a.png", width = 8, height = 6)
 
-occ_lk <- tibble::tribble(
+occ_lk = tibble::tribble(
   ~occ2010, ~label,
     50, "Marketing and sales managers",
    230, "Education administrators",
@@ -1373,11 +1207,10 @@ occ_lk <- tibble::tribble(
   4220, "Janitors and building cleaners",
   4230, "Maids and housekeeping cleaners",
   4610, "Personal care aides",
-  5940, "Miscellaneous office and administrative support workers, including desktop publishers"
-) %>%
+  5940, "Miscellaneous office and administrative support workers, including desktop publishers") %>%
   dplyr::mutate(occ2010 = as.integer(occ2010))
 
-transit_occ <- data %>%
+transit_occ = data %>%
   filter(year == 2024, tranwork > 0) %>%
   group_by(occ2010) %>%
   summarise(
