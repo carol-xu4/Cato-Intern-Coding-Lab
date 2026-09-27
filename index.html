@@ -177,9 +177,8 @@ const S = [
 {sec:"intro", area:"intro", tag:"What is the ACS?", kick:"Intro", q:"What is the ACS?",
  blocks:[
    {h:`<p class="lede">The <b>American Community Survey</b> is the Census Bureau's largest annual survey \u2014
-   roughly 3.5 million households a year, asked in detail about work, income, family, health coverage,
-   housing, schooling, and how they get around. It is where we get numbers like the poverty rate, the uninsured
-   rate, and labor force participation, or information like where immigrants settle.</p>
+   roughly 3.5 million people a year, asked in detail about work, income, family, health coverage,
+   housing, schooling, and more. It is where we get numbers like the poverty rate, labor force participation, and where immigrants settle.</p>
    <p class="lede">A few examples a policy analyst might ask:</p>`},
    {pts:[
      "How has the share of people without health insurance changed over the past decade?",
@@ -216,7 +215,6 @@ const S = [
      </div>`}]},
 {sec:"intro", area:"intro", tag:"Three steps", kick:"Intro", q:"Three steps to remember",
  blocks:[
-   {h:`<p class="lede">Every question today becomes the same three moves:</p>`},
    {pts:[
      "<span class=\"tok\">filter</span> \u2014 which people? (adults, one year, workers...)",
      "<span class=\"tok\">group_by</span> \u2014 compare across what? (states, years, education...)",
@@ -252,9 +250,7 @@ data <- read_csv("data/acs00015.csv")`},
      <p class="lede"><b>&lt;- is assignment.</b> It means &ldquo;save the thing on the right into the name on the
      left.&rdquo; So <span class="tok">data &lt;- read_csv(...)</span> runs read_csv and stores the result under
      the name <b>data</b>.</p>
-     <p class="lede"><b>data is now an object</b> \u2014 specifically a <i>data frame</i>: one giant table sitting
-     in memory, with a row for every person and a column for every variable. It's the R version of a
-     spreadsheet \u2014 rows are observations (individual people), and columns are variables (age, income, state)</p>`}]},
+     <p class="lede"><b>data is now an object</b> \u2014 specifically a <i>data frame</i></p>`}]},
 {sec:"intro", area:"intro", tag:"First look", kick:"Intro", q:"Take a first look",
  blocks:[
    {h:`<p class="lede">Never trust a file you haven't looked at.</p>`},
@@ -291,20 +287,19 @@ table(data$year, data$marst)
 
 # tidyverse: a tidy data frame with one row per combination and a count column 'n'
 count(data, year, marst)`},
-   {h:`<p class="lede">Reach for <span class="tok">table()</span> for a quick cross-tab to eyeball in the console;
-     reach for <span class="tok">count()</span> when you want a result you'll pipe onward into a plot or another step.</p>
+   {h:`<p class="lede">Reach for <span class="tok">table()</span> for a quick cross-tab to eyeball in the terminal;
+     use <span class="tok">count()</span> when you want a result you'll pipe onward into a plot or another step.</p>
      <div class="h3">Quick summary functions</div>
      <p class="lede">For a numeric column, <span class="tok">sum()</span>, <span class="tok">mean()</span>,
      <span class="tok">median()</span>, <span class="tok">min()</span>, and <span class="tok">max()</span> each return
-     one number. <span class="tok">summary()</span> gives several at once \u2014 the min, quartiles, mean, and max:</p>`},
+     one number:</p>`},
    {code:`summary(data$inctot)   # min, 1st quartile, median, mean, 3rd quartile, max
 
 mean(data$age)         # average age
 
 median(data$inctot, na.rm = TRUE)    # the middle income`},
    {h:`<div class="h3">Saving a table</div>
-     <p class="lede">Once you've made a summary table, <span class="tok">write_csv()</span> saves it to a file \u2014
-     the mirror image of <span class="tok">read_csv()</span>:</p>`},
+     <p class="lede">Once you've made a summary table, <span class="tok">write_csv()</span> saves it to a file:</p>`},
    {code:`# make a table, then save it to your Results folder
 state_counts <- count(data, statefip)
 
@@ -398,9 +393,8 @@ write_csv(state_counts, "Results/state_counts.csv")`}]},
      </svg>
      </div>
      <div class="h3" style="border-top:none;padding-top:0;margin-top:8px">The pipe: %>%</div>
-     <p class="lede">The pipe passes the thing on its left into the function on its right \u2014 read it as
-     &ldquo;and then.&rdquo; These two lines are identical, i.e. &ldquo;take data, and then count by sex.&rdquo;
-     Pipes let you chain steps in the order you'd read them.</p>`},
+     <p class="lede">The pipe passes the output of the function on the left directly into the one one its right \u2014 read it as
+     &ldquo;and then.&rdquo; These two lines are identical. Pipes let you chain operations in the order you'd read them.</p>`},
    {code:`count(data, sex)        # count 'sex' in 'data'
 
 data %>% count(sex)     # take 'data' AND THEN count by 'sex'`},
@@ -411,7 +405,7 @@ data %>% count(sex)     # take 'data' AND THEN count by 'sex'`},
        <li><span class="tok">==</span> \u2014 equals</li>
        <li><span class="tok">&gt;=</span> \u2014 at least (greater than or equal to)</li>
        <li><span class="tok">&lt;</span> \u2014 less than</li>
-       <li><span class="tok">%in%</span> \u2014 is one of (matches any value in a set)</li>
+       <li><span class="tok">%in%</span> \u2014 is one of (matches any value in a list)</li>
      </ul>`},
    {code:`# save each filtered result as its own object
 adults      <- data %>% filter(age >= 18)
@@ -422,14 +416,11 @@ immigrants  <- data %>% filter(bpl >= 100)                   # born abroad
 
 young_grads <- data %>% filter(age >= 25, age <= 34, educ >= 10)
 
-# %in% keeps rows matching ANY value in a set -- here, all public-transit commuters
+# %in% keeps rows matching ANY value in a list -- here, all public-transit commuters
 transit <- data %>% filter(tranwork %in% c(31, 32, 33, 34, 35, 36, 37))`},
    {h:`<div class="h3">group_by() + summarise() — one number per group</div>
      <p class="lede"><span class="tok">group_by()</span> draws invisible dividers through the table;
-     <span class="tok">summarise()</span> collapses each group to a single row and <b>creates a new column</b>. 
-     Useful summaries:
-     <span class="tok">n()</span> counts rows, plus <span class="tok">median(x)</span> and
-     <span class="tok">mean(x)</span>.</p>`},
+     <span class="tok">summarise()</span> collapses each group to a single row and <b>creates a new column</b>. </p>`},
    {code:`# median personal income at each education level
 income_by_educ <- data %>%
   filter(inctot != 9999999) %>%      # drop the "N/A" income code
@@ -438,13 +429,12 @@ income_by_educ <- data %>%
 
 income_by_educ        # print the result to look at it`},
    {h:`<p class="lede">Inside <span class="tok">summarise()</span> you can use any function that turns many
-     numbers into one: <span class="tok">n()</span> counts rows, and
+     numbers into aggregates: <span class="tok">n()</span> counts rows, and
      <span class="tok">sum()</span>, <span class="tok">mean()</span>, <span class="tok">median()</span>,
      <span class="tok">min()</span>, <span class="tok">max()</span>, and <span class="tok">sd()</span>
      each summarise a column.</p>
      <div class="h3">The share trick</div>
-     <p class="lede">The mean of a TRUE/FALSE test is a proportion \u2014 times 100 gives a percent.
-     Here we build on the <span class="tok">adults</span> object we made above.</p>`},
+     <p class="lede">The mean of a TRUE/FALSE test is a proportion \u2014 times 100 gives a percent. </p>`},
    {code:`# share of adults uninsured, by state
 uninsured_by_state <- adults %>%
   group_by(statefip) %>%
@@ -508,17 +498,14 @@ medicaid_rates <- data %>%
      weights have been re-adjusted so the population estimates still hold, but this sample is much smaller than
      the full ACS \u2014 roughly 40,000 rows per year here, versus the ~ 3 million per year in the complete
      data. Expect noisier estimates for small subgroups than you'd get from the full files.</div>
-     <div class="h3">How the Census builds the weights</div>
+     <div class="h3">Iterative Proportional Fitting (IPF): How the Census builds the weights</div>
      <p class="lede">Each person starts with a <b>base weight</b> \u2014 the inverse of their chance of being
      sampled. The Census Bureau then adjusts it for household nonresponse, and finally <b>rakes</b> the weights
      so the survey totals match independent population estimates by age, sex, race, Hispanic origin, and state.
      The end result, <span class="tok">perwt</span>, is how many people in the country each respondent represents.</p>`}]},
 {sec:"intro", area:"intro", tag:"ggplot", kick:"Intro", q:"Making plots with ggplot",
  blocks:[
-   {h:`<p class="lede">A ggplot is built in layers joined by <span class="tok">+</span>: the <b>data</b>,
-     an <b>aes()</b> mapping columns to visual properties, and a <b>geom</b> for what to draw.</p>
-     <div class="h3">The grammar of graphics</div>
-     <p class="lede">Every plot follows the same template \u2014 fill in the data, the mappings, and a geom:</p>`},
+   {h:`<div class="h3">The grammar of graphics</div>`},
    {code:`ggplot(<DATA>, aes(<MAPPINGS>)) +
   <GEOM_FUNCTION>()`},
    {h:`<p class="lede"><b>aes() mappings</b> connect columns to what you see: <span class="tok">x</span> and
