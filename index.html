@@ -813,12 +813,12 @@ ggplot(fam, aes(reorder(statefip, median_family_income), median_family_income)) 
   labs(x = NULL, y = "Median family income")`},
 {sec:"q", area:"econ", tag:"Family income by number of children",
  q:"In 2024, how did median family income vary by the number of children in the family?",
- hint:"Drop the N/A family-income code, then take a weighted median of ftotinc within each number of children (nchild), keeping 0 through 5+.",
+ hint:"Drop the N/A family-income code, then take a median of ftotinc within each number of children (nchild), keeping 0 through 5+.",
  vars:["year","ftotinc","nchild","perwt"],
  sol:`fam_kids <- data %>%
   filter(year == 2024, ftotinc != 9999999) %>%
   group_by(nchild) %>%
-  summarise(median_family_income = matrixStats::weightedMedian(ftotinc, perwt), .groups = "drop") %>%
+  summarise(median_family_income = median(ftotinc), .groups = "drop") %>%
   filter(nchild <= 5) %>%
   mutate(kids = factor(nchild, labels = c("0","1","2","3","4","5+")))`},
 {sec:"q", area:"immig", tag:"Foreign-born over time",
