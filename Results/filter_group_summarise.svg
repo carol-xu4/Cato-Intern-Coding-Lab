@@ -1,0 +1,84 @@
+<svg viewBox="0 0 1150 200" width="1150" height="200" xmlns="http://www.w3.org/2000/svg" role="img">
+<title>Filter, group by, and summarise applied to a Medicaid enrollment example</title>
+<desc>Sixteen person cards, some fully colored and some in a lighter tint of the same color, start as one deck. Filtering keeps only the ten fully colored cards -- the ones on Medicaid -- and drops the rest. Group by sorts those ten into four year piles of four, three, two, and one. Summarise collapses each pile into a stacked-card total: four in 2021, three in 2022, two in 2023, one in 2024.</desc>
+<defs>
+<marker id="arrow3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M0,0 L10,5 L0,10 z" fill="#5B6070"></path>
+</marker>
+</defs>
+
+<rect x="40" y="64" width="20" height="30" rx="5" fill="#B23A48"></rect>
+<rect x="63" y="64" width="20" height="30" rx="5" fill="#3043B4" opacity="0.3"></rect>
+<rect x="86" y="64" width="20" height="30" rx="5" fill="#3043B4"></rect>
+<rect x="109" y="64" width="20" height="30" rx="5" fill="#B23A48"></rect>
+<rect x="132" y="64" width="20" height="30" rx="5" fill="#6D3FA3" opacity="0.3"></rect>
+<rect x="155" y="64" width="20" height="30" rx="5" fill="#6D3FA3"></rect>
+<rect x="178" y="64" width="20" height="30" rx="5" fill="#C97703" opacity="0.3"></rect>
+<rect x="201" y="64" width="20" height="30" rx="5" fill="#3043B4"></rect>
+<rect x="40" y="100" width="20" height="30" rx="5" fill="#B23A48"></rect>
+<rect x="63" y="100" width="20" height="30" rx="5" fill="#B23A48" opacity="0.3"></rect>
+<rect x="86" y="100" width="20" height="30" rx="5" fill="#C97703"></rect>
+<rect x="109" y="100" width="20" height="30" rx="5" fill="#3043B4"></rect>
+<rect x="132" y="100" width="20" height="30" rx="5" fill="#B23A48"></rect>
+<rect x="155" y="100" width="20" height="30" rx="5" fill="#3043B4" opacity="0.3"></rect>
+<rect x="178" y="100" width="20" height="30" rx="5" fill="#6D3FA3" opacity="0.3"></rect>
+<rect x="201" y="100" width="20" height="30" rx="5" fill="#6D3FA3"></rect>
+<text x="130" y="160" style="font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;fill:#5B6070" text-anchor="middle">everyone</text>
+
+<line x1="227" y1="97" x2="267" y2="97" stroke="#5B6070" stroke-width="2" marker-end="url(#arrow3)"></line>
+
+<text x="364" y="28" style="font-family:'Space Grotesk',system-ui,sans-serif;font-weight:600;font-size:14px;fill:#14161F" text-anchor="middle">filter</text>
+<rect x="273" y="64" width="20" height="30" rx="5" fill="#B23A48"></rect>
+<rect x="319" y="64" width="20" height="30" rx="5" fill="#3043B4"></rect>
+<rect x="342" y="64" width="20" height="30" rx="5" fill="#B23A48"></rect>
+<rect x="388" y="64" width="20" height="30" rx="5" fill="#6D3FA3"></rect>
+<rect x="434" y="64" width="20" height="30" rx="5" fill="#3043B4"></rect>
+<rect x="273" y="100" width="20" height="30" rx="5" fill="#B23A48"></rect>
+<rect x="319" y="100" width="20" height="30" rx="5" fill="#C97703"></rect>
+<rect x="342" y="100" width="20" height="30" rx="5" fill="#3043B4"></rect>
+<rect x="365" y="100" width="20" height="30" rx="5" fill="#B23A48"></rect>
+<rect x="434" y="100" width="20" height="30" rx="5" fill="#6D3FA3"></rect>
+<text x="364" y="160" style="font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;fill:#5B6070" text-anchor="middle">adults on Medicaid</text>
+
+<line x1="460" y1="97" x2="500" y2="97" stroke="#5B6070" stroke-width="2" marker-end="url(#arrow3)"></line>
+
+<text x="599" y="28" style="font-family:'Space Grotesk',system-ui,sans-serif;font-weight:600;font-size:14px;fill:#14161F" text-anchor="middle">group_by</text>
+<text x="528" y="54" style="font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:10px;fill:#5B6070" text-anchor="middle">2021</text>
+<rect x="506" y="64" width="20" height="30" rx="5" fill="#B23A48"></rect>
+<rect x="529" y="64" width="20" height="30" rx="5" fill="#B23A48"></rect>
+<rect x="506" y="100" width="20" height="30" rx="5" fill="#B23A48"></rect>
+<rect x="529" y="100" width="20" height="30" rx="5" fill="#B23A48"></rect>
+<text x="590" y="54" style="font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:10px;fill:#5B6070" text-anchor="middle">2022</text>
+<rect x="569" y="64" width="20" height="30" rx="5" fill="#3043B4"></rect>
+<rect x="592" y="64" width="20" height="30" rx="5" fill="#3043B4"></rect>
+<rect x="569" y="100" width="20" height="30" rx="5" fill="#3043B4"></rect>
+<text x="642" y="54" style="font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:10px;fill:#5B6070" text-anchor="middle">2023</text>
+<rect x="632" y="64" width="20" height="30" rx="5" fill="#6D3FA3"></rect>
+<rect x="632" y="100" width="20" height="30" rx="5" fill="#6D3FA3"></rect>
+<text x="682" y="54" style="font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:10px;fill:#5B6070" text-anchor="middle">2024</text>
+<rect x="672" y="64" width="20" height="30" rx="5" fill="#C97703"></rect>
+<text x="599" y="160" style="font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;fill:#5B6070" text-anchor="middle">sort by year</text>
+
+<line x1="698" y1="97" x2="738" y2="97" stroke="#5B6070" stroke-width="2" marker-end="url(#arrow3)"></line>
+
+<text x="926" y="28" style="font-family:'Space Grotesk',system-ui,sans-serif;font-weight:600;font-size:14px;fill:#14161F" text-anchor="middle">summarise</text>
+<rect x="756" y="76" width="70" height="70" rx="10" fill="#B23A48" opacity="0.35"></rect>
+<rect x="752" y="72" width="70" height="70" rx="10" fill="#B23A48" opacity="0.5"></rect>
+<rect x="748" y="68" width="70" height="70" rx="10" fill="#B23A48" opacity="0.7"></rect>
+<rect x="744" y="64" width="70" height="70" rx="10" fill="#B23A48"></rect>
+<text x="779" y="86" style="font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;fill:#fff" text-anchor="middle">2021</text>
+<text x="779" y="116" style="font-family:'Space Grotesk',system-ui,sans-serif;font-weight:700;font-size:26px;fill:#fff" text-anchor="middle">4</text>
+<rect x="854" y="72" width="70" height="70" rx="10" fill="#3043B4" opacity="0.45"></rect>
+<rect x="850" y="68" width="70" height="70" rx="10" fill="#3043B4" opacity="0.7"></rect>
+<rect x="846" y="64" width="70" height="70" rx="10" fill="#3043B4"></rect>
+<text x="881" y="86" style="font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;fill:#fff" text-anchor="middle">2022</text>
+<text x="881" y="116" style="font-family:'Space Grotesk',system-ui,sans-serif;font-weight:700;font-size:26px;fill:#fff" text-anchor="middle">3</text>
+<rect x="948" y="68" width="70" height="70" rx="10" fill="#6D3FA3" opacity="0.6"></rect>
+<rect x="944" y="64" width="70" height="70" rx="10" fill="#6D3FA3"></rect>
+<text x="979" y="86" style="font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;fill:#fff" text-anchor="middle">2023</text>
+<text x="979" y="116" style="font-family:'Space Grotesk',system-ui,sans-serif;font-weight:700;font-size:26px;fill:#fff" text-anchor="middle">2</text>
+<rect x="1038" y="64" width="70" height="70" rx="10" fill="#C97703"></rect>
+<text x="1073" y="86" style="font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;fill:#fff" text-anchor="middle">2024</text>
+<text x="1073" y="116" style="font-family:'Space Grotesk',system-ui,sans-serif;font-weight:700;font-size:26px;fill:#fff" text-anchor="middle">1</text>
+<text x="926" y="160" style="font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;fill:#5B6070" text-anchor="middle">count the number in each group</text>
+</svg>
